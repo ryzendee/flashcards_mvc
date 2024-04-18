@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}"/>
+    <title>Sign-up</title>
+</head>
+<body>
+<div class="container">
+    <div class="auth-block mt-5">
+
+        <form class="col-md-4 mx-auto" th:action="@{/login}" method="post">
+
+            <div class="auth-form__errors alert alert-danger text-center" th:if="${param.error}">
+                Invalid email or password
+            </div>
+
+            <div class="mb-3">
+                <label for="login-username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="login-username" name="username">
+            </div>
+
+            <div class="mb-3">
+                <label for="login-password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="login-password" name="password">
+            </div>
+
+            <div class="button-wrapper text-center">
+                <button type="submit" class="button btn btn-primary w-25 me-4">
+                    Login
+                </button>
+
+                <button class="button btn btn-success w-25">
+                    <a class="link-light link-underline-opacity-0" href="/signup">Signup</a>
+                </button>
+            </div>
+
+            <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+            <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.min.js}"></script>
+
+        </form>
+    </div>
+</div>
+</body>
+</html>

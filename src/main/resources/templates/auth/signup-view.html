@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}"/>
+    <title>Sign-up</title>
+</head>
+<body>
+<div class="container">
+    <div class="auth-block mt-5">
+        <form class="col-md-4 mx-auto" th:action="@{/signup}" method="post" th:object="${signUpDto}">
+
+            <div class="auth-form_errors" th:if="${#fields.hasErrors('*')}">
+                <div th:each="error : ${errors}" class="alert alert-danger text-center">
+                    <p th:text="${error.defaultMessage}"></p>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="signup-username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="signup-username" th:field="*{username}">
+            </div>
+
+            <div class="mb-3">
+                <label for="signup-password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="signup-password" th:field="*{password}">
+            </div>
+
+            <div class="mb-3">
+                <label for="signup-password-confirmation" class="form-label">Password Confirmation</label>
+                <input type="password" class="form-control" id="signup-password-confirmation"
+                       th:field="*{passwordConfirmation}">
+            </div>
+
+            <div class="button-wrapper text-center">
+                <button type="submit" class="button btn btn-primary w-50">
+                    Sign up
+                </button>
+            </div>
+
+            <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+            <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.min.js}"></script>
+        </form>
+    </div>
+</div>
+</body>
+</html>
