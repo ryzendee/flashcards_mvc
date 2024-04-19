@@ -1,6 +1,6 @@
 package com.app.flashcards.unit.service;
 
-import com.app.flashcards.dto.auth.SignUpDto;
+import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
 import com.app.flashcards.exception.custom.SignUpException;
 import com.app.flashcards.factory.UserFactory;
@@ -35,40 +35,40 @@ public class UserServiceTest {
 
     @Test
     void createUser_withSignUpDto_createsUser() {
-        SignUpDto signUpDto = getSignUpDto();
+        SignUpDtoRequest signUpDtoRequest = getSignUpDto();
         User expectedUser = getUser();
 
-        when(userFactory.createFromSignUp(signUpDto, passwordEncoder))
+        when(userFactory.createFromSignUp(signUpDtoRequest, passwordEncoder))
                 .thenReturn(expectedUser);
         when(userRepository.save(expectedUser))
                 .thenReturn(expectedUser);
 
-        User actualUser = userService.createUser(signUpDto);
+        User actualUser = userService.createUser(signUpDtoRequest);
         assertThat(actualUser).isEqualTo(expectedUser);
 
-        verify(userFactory).createFromSignUp(signUpDto, passwordEncoder);
+        verify(userFactory).createFromSignUp(signUpDtoRequest, passwordEncoder);
         verify(userRepository).save(expectedUser);
     }
 
     @Test
     void createUser_repositoryThrowsDataIntegrityViolationEx_throwsSignUpEx() {
-        SignUpDto signUpDto = getSignUpDto();
+        SignUpDtoRequest signUpDtoRequest = getSignUpDto();
         User user = getUser();
 
-        when(userFactory.createFromSignUp(signUpDto, passwordEncoder))
+        when(userFactory.createFromSignUp(signUpDtoRequest, passwordEncoder))
                 .thenReturn(user);
         when(userRepository.save(user))
                 .thenThrow(new DataIntegrityViolationException("test-msg"));
 
-        assertThatThrownBy(() -> userService.createUser(signUpDto))
+        assertThatThrownBy(() -> userService.createUser(signUpDtoRequest))
                 .isInstanceOf(SignUpException.class);
 
-        verify(userFactory).createFromSignUp(signUpDto, passwordEncoder);
+        verify(userFactory).createFromSignUp(signUpDtoRequest, passwordEncoder);
         verify(userRepository).save(user);
     }
 
-    private SignUpDto getSignUpDto() {
-        return new SignUpDto("test-username", "test-pass", "test-pass");
+    private SignUpDtoRequest getSignUpDto() {
+        return new SignUpDtoRequest("test-username", "test-pass", "test-pass");
     }
 
     private User getUser() {

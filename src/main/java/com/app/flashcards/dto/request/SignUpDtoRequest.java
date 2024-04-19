@@ -1,8 +1,7 @@
-package com.app.flashcards.dto.auth;
+package com.app.flashcards.dto.request;
 
 import com.app.flashcards.annotations.validation.PasswordMatcher;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +13,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignUpDto {
+public class SignUpDtoRequest {
 
     @NotBlank(message = "Username must not be blank or empty.")
     private String username;

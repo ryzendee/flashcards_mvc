@@ -9,7 +9,7 @@
 <body>
 <div class="container">
     <div class="auth-block mt-5">
-        <form class="col-md-4 mx-auto" th:action="@{/signup}" method="post" th:object="${signUpDto}">
+        <form class="col-md-4 mx-auto" th:action="@{/signup}" method="post" th:object="${signUpDtoRequest}">
 
             <div class="auth-form_errors" th:if="${#fields.hasErrors('*')}">
                 <div th:each="error : ${errors}" class="alert alert-danger text-center">

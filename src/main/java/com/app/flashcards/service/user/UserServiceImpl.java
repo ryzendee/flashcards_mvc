@@ -1,6 +1,6 @@
 package com.app.flashcards.service.user;
 
-import com.app.flashcards.dto.auth.SignUpDto;
+import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
 import com.app.flashcards.exception.custom.SignUpException;
 import com.app.flashcards.factory.UserFactory;
@@ -22,8 +22,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public User createUser(SignUpDto signUpDto) {
-        User user = userFactory.createFromSignUp(signUpDto, passwordEncoder);
+    public User createUser(SignUpDtoRequest signUpDtoRequest) {
+        User user = userFactory.createFromSignUp(signUpDtoRequest, passwordEncoder);
 
         try {
             userRepository.save(user);

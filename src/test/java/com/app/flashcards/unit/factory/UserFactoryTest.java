@@ -1,6 +1,6 @@
 package com.app.flashcards.unit.factory;
 
-import com.app.flashcards.dto.auth.SignUpDto;
+import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
 import com.app.flashcards.factory.UserFactory;
 import com.app.flashcards.factory.UserFactoryImpl;
@@ -23,16 +23,16 @@ public class UserFactoryTest {
 
     @Test
     void createUserFromSignUp_withEncoder_createsUser() {
-        SignUpDto signUpDto = new SignUpDto("test-username", "test-pass", "test-pass");
+        SignUpDtoRequest signUpDtoRequest = new SignUpDtoRequest("test-username", "test-pass", "test-pass");
         String encodedPassword = "test-password";
         PasswordEncoder encoder = Mockito.mock(PasswordEncoder.class);
 
-        when(encoder.encode(signUpDto.getPassword()))
+        when(encoder.encode(signUpDtoRequest.getPassword()))
                 .thenReturn(encodedPassword);
 
-        User user = userFactory.createFromSignUp(signUpDto, encoder);
+        User user = userFactory.createFromSignUp(signUpDtoRequest, encoder);
 
-        assertThat(user.getUsername()).isEqualTo(signUpDto.getUsername());
+        assertThat(user.getUsername()).isEqualTo(signUpDtoRequest.getUsername());
         assertThat(user.getPassword()).isEqualTo(encodedPassword);
     }
 

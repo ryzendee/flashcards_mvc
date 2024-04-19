@@ -1,6 +1,6 @@
 package com.app.flashcards.controller;
 
-import com.app.flashcards.dto.auth.SignUpDto;
+import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +25,12 @@ public class AuthController {
 
     @GetMapping("/signup")
     public String getSignUpView(Model model) {
-        model.addAttribute("signUpDto", new SignUpDto());
+        model.addAttribute("signUpDtoRequest", new SignUpDtoRequest());
         return "auth/signup-view";
     }
 
     @PostMapping("/signup")
-    public String signUp(@Valid @ModelAttribute SignUpDto signUpDto,
+    public String signUp(@Valid @ModelAttribute SignUpDtoRequest signUpDtoRequest,
                          BindingResult bindingResult,
                          Model model) {
 
@@ -39,7 +39,7 @@ public class AuthController {
             return "auth/signup-view";
         }
 
-        userService.createUser(signUpDto);
+        userService.createUser(signUpDtoRequest);
 
         return "redirect:/login";
     }

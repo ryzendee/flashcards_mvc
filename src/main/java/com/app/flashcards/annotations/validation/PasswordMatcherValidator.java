@@ -1,10 +1,10 @@
 package com.app.flashcards.annotations.validation;
 
-import com.app.flashcards.dto.auth.SignUpDto;
+import com.app.flashcards.dto.request.SignUpDtoRequest;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class PasswordMatcherValidator implements ConstraintValidator<PasswordMatcher, SignUpDto> {
+public class PasswordMatcherValidator implements ConstraintValidator<PasswordMatcher, SignUpDtoRequest> {
 
     @Override
     public void initialize(PasswordMatcher constraintAnnotation) {
@@ -12,7 +12,7 @@ public class PasswordMatcherValidator implements ConstraintValidator<PasswordMat
     }
 
     @Override
-    public boolean isValid(SignUpDto value, ConstraintValidatorContext context) {
+    public boolean isValid(SignUpDtoRequest value, ConstraintValidatorContext context) {
         return value.getPassword() != null && value.getPassword().equals(value.getPasswordConfirmation());
     }
 }

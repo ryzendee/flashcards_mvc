@@ -1,6 +1,6 @@
 package com.app.flashcards.unit.controller;
 
-import com.app.flashcards.dto.auth.SignUpDto;
+import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,7 +81,7 @@ public class AuthControllerTest {
         ).andExpectAll(
                 status().isOk(),
                 view().name("auth/signup-view"),
-                model().attributeExists("signUpDto")
+                model().attributeExists("signUpDtoRequest")
         );
     }
 
@@ -98,7 +98,7 @@ public class AuthControllerTest {
                 redirectedUrl("/login")
         );
 
-        verify(authService).createUser(any(SignUpDto.class));
+        verify(authService).createUser(any(SignUpDtoRequest.class));
     }
     @MethodSource("getArgsForInvalidSignUp")
     @ParameterizedTest
