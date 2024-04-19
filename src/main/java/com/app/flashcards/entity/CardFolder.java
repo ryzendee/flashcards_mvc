@@ -3,7 +3,7 @@ package com.app.flashcards.entity;
 import jakarta.persistence.*;
 
 @Entity
-public class FlashcardFolder {
+public class CardFolder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

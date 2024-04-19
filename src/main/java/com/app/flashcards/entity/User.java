@@ -25,7 +25,7 @@ public class User implements UserDetails {
     private String username;
     private String password;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<FlashcardFolder> cardModuleList = new ArrayList<>();
+    private List<CardFolder> cardModuleList = new ArrayList<>();
 
 
     public User(String username, String password) {
