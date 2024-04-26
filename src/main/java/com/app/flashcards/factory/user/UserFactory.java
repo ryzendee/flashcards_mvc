@@ -1,4 +1,4 @@
-package com.app.flashcards.factory;
+package com.app.flashcards.factory.user;
 
 import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
