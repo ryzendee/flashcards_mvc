@@ -3,6 +3,7 @@ package com.app.flashcards.service.user;
 import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
 import com.app.flashcards.exception.custom.SignUpException;
+import com.app.flashcards.exception.custom.UserNotFoundException;
 import com.app.flashcards.factory.UserFactory;
 import com.app.flashcards.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,12 @@ public class UserServiceImpl implements UserService {
             log.error("Failed to save user", ex);
             throw new SignUpException("User with this username already exists.");
         }
+    }
+
+    @Override
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found! Id: " + userId));
     }
 
     @Override
