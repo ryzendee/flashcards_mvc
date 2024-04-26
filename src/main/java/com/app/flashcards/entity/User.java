@@ -1,8 +1,7 @@
 package com.app.flashcards.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -10,12 +9,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Data
+
 @Entity
 @Table(
         name = "users",
         uniqueConstraints = {@UniqueConstraint(columnNames = {"username"})}
 )
+@Getter
+@Setter
 @NoArgsConstructor
 public class User implements UserDetails {
 
@@ -25,14 +26,13 @@ public class User implements UserDetails {
     private String username;
     private String password;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<CardFolder> cardModuleList = new ArrayList<>();
+    private List<CardFolder> cardFolderList = new ArrayList<>();
 
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
-
 
     //Security
     @Override
