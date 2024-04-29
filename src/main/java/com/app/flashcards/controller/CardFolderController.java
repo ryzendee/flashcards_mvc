@@ -1,6 +1,7 @@
 package com.app.flashcards.controller;
 
 import com.app.flashcards.dto.request.CardFolderCreateDtoRequest;
+import com.app.flashcards.dto.request.CardFolderUpdateDtoRequest;
 import com.app.flashcards.dto.response.CardFolderDtoResponse;
 import com.app.flashcards.facade.cardfolder.CardFolderServiceFacade;
 import jakarta.validation.Valid;
@@ -56,6 +57,39 @@ public class CardFolderController {
 
         folderServiceFacade.createCardFolder(userId, cardFolderCreateDtoRequest);
 
-        return "redirect:/flashcard-folders";
+        return "redirect:/folders";
+    }
+
+    @GetMapping("/folders-update")
+    public String getUpdateFolderView(@RequestParam Long folderId,
+                                      Model model) {
+
+        CardFolderUpdateDtoRequest cardFolderUpdateDtoRequest = new CardFolderUpdateDtoRequest();
+        cardFolderUpdateDtoRequest.setId(folderId);
+        model.addAttribute("cardFolder", cardFolderUpdateDtoRequest);
+
+        return "cardfolder/cardfolder-update-view";
+    }
+    @PostMapping("/folders-update")
+    public String updateFolder(@Valid @ModelAttribute CardFolderUpdateDtoRequest request,
+                               @SessionAttribute Long userId,
+                               BindingResult bindingResult,
+                               Model model) {
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("errors", bindingResult.getAllErrors());
+            return "cardfolder/cardfolder-update-view";
+        }
+
+        folderServiceFacade.updateCardFolder(userId, request);
+
+        return "redirect:/folders";
+    }
+
+    @PostMapping("/folders-delete")
+    public String deleteFolder(@RequestParam Long moduleId) {
+        folderServiceFacade.deleteById(moduleId);
+
+        return "redirect:/folders";
     }
 }
