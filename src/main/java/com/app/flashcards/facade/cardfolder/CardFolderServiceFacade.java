@@ -11,5 +11,4 @@ public interface CardFolderServiceFacade {
     Page<CardFolderDtoResponse> getCardFolderPageByUserId(Long userId, int page, int size);
     void updateCardFolder(Long userId, CardFolderUpdateDtoRequest updateRequest);
     void deleteById(Long folderId);
-    CardFolderUpdateDtoRequest mapToUpdateRequest(CardFolderDtoResponse response);
 }

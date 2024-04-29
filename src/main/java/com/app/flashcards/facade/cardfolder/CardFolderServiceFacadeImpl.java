@@ -56,11 +56,6 @@ public class CardFolderServiceFacadeImpl implements CardFolderServiceFacade {
         cardFolderService.deleteById(folderId);
     }
 
-    @Override
-    public CardFolderUpdateDtoRequest mapToUpdateRequest(CardFolderDtoResponse response) {
-        return cardFolderMapper.toUpdateRequest(response);
-    }
-
     private ImageData createImageData(Long userId, MultipartFile image) {
         return new ImageData(userId, image, ImagePath.CARDFOLDER_PATH);
     }
