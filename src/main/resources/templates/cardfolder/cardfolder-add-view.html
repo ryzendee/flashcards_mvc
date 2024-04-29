@@ -1,11 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
@@ -20,25 +13,23 @@
 <body>
 
 <div class="container">
-    <div class="add-form-block">
 
-        <header th:replace="~{fragments/navbar-fragment :: navbar}"></header>
+    <header th:replace="~{fragments/navbar-fragment :: navbar}"></header>
 
-        <div class="title col-md-2 mx-auto h2">
-            Add Folder
-        </div>
-        <form class="col-md-4 mx-auto" th:action="@{/folders-add}" th:object="${cardFolder}" method="post" enctype="multipart/form-data">
-            <div th:if="${#fields.hasErrors('*')}">
-                <div th:each="error : ${errors}" class="alert alert-danger text-center">
-                    <p th:text="${error.defaultMessage}"></p>
-                </div>
-            </div>
-
-            <div th:replace="~{fragments/cardfolder-edit-fragment :: cardfolderFormFragment}"></div>
-        </form>
+    <div class="title col-md-2 mx-auto h2">
+        Add Folder
     </div>
+
+    <form class="col-md-4 mx-auto" th:action="@{/folders-add}" th:object="${cardFolder}" method="post"
+          enctype="multipart/form-data">
+        <div th:if="${#fields.hasErrors('*')}">
+            <div th:each="error : ${errors}" class="alert alert-danger text-center">
+                <p th:text="${error.defaultMessage}"></p>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/cardfolder-edit-fragment :: cardfolderFormFragment}"></div>
+    </form>
 </div>
-</body>
-</html>
 </body>
 </html>
