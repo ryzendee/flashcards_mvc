@@ -2,6 +2,7 @@ package com.app.flashcards.service.image;
 
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.exception.custom.ImageUploadException;
+import com.app.flashcards.models.ImageData;
 import com.app.flashcards.utils.minio.MinioUtils;
 import com.app.flashcards.utils.path.ImagePathGenerator;
 import io.minio.errors.MinioException;
@@ -35,13 +36,15 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public String uploadImage(Long userId, MultipartFile image, ImagePath imagePath) {
+    public String uploadImage(ImageData imageData) {
+        MultipartFile image = imageData.image();
+
         if (image.isEmpty()) {
             return ImagePath.DEFAULT.getPathToImage();
         }
 
         try {
-            String generatedPath = imagePathGenerator.generatePath(String.valueOf(userId), image.getOriginalFilename(), imagePath);
+            String generatedPath = imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
             minioUtils.uploadFile(bucketName, generatedPath, image);
 
             return minioUtils.getUrlToFile(bucketName, generatedPath);

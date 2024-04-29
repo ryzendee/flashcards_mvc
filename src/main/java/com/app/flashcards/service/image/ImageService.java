@@ -1,10 +1,8 @@
 package com.app.flashcards.service.image;
 
-import com.app.flashcards.enums.ImagePath;
-import org.springframework.web.multipart.MultipartFile;
+import com.app.flashcards.models.ImageData;
 
 public interface ImageService {
-    String uploadImage(Long userId, MultipartFile image, ImagePath imagePath);
+    String uploadImage(ImageData imageData);
     void deleteImage(String bucketName, String path);
-
 }
