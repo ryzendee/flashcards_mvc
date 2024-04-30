@@ -2,8 +2,8 @@ package com.app.flashcards.unit.factory;
 
 import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
-import com.app.flashcards.factory.UserFactory;
-import com.app.flashcards.factory.UserFactoryImpl;
+import com.app.flashcards.factory.user.UserFactory;
+import com.app.flashcards.factory.user.UserFactoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

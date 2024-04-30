@@ -3,7 +3,7 @@ package com.app.flashcards.unit.service;
 import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
 import com.app.flashcards.exception.custom.SignUpException;
-import com.app.flashcards.factory.UserFactory;
+import com.app.flashcards.factory.user.UserFactory;
 import com.app.flashcards.repository.UserRepository;
 import com.app.flashcards.service.user.UserServiceImpl;
 import org.junit.jupiter.api.Test;
