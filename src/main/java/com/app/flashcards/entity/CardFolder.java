@@ -3,6 +3,8 @@ package com.app.flashcards.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 
 @Getter
 @Setter
@@ -27,6 +29,9 @@ public class CardFolder {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToMany(mappedBy = "cardFolder", cascade = CascadeType.ALL)
+    private List<Flashcard> flashcardList;
 
     public CardFolder(String name, String description, String imageUrl, User user) {
         this.name = name;
