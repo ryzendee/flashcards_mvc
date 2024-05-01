@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CardFolderRepository extends JpaRepository<CardFolder, Long> {
 
     Page<CardFolder> findAllByUserId(Long userId, Pageable pageable);
+    Boolean existsByUserId(Long folderId, Long userId);
 }

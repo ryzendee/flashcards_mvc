@@ -14,4 +14,5 @@ public interface CardFolderService {
     void deleteById(Long folderId);
     CardFolder update(CardFolderUpdateDtoRequest request, CardFolderUpdateData data);
     CardFolder getById(Long folderId);
+    boolean existsByUserId(Long folderId, Long userId);
 }

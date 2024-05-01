@@ -64,4 +64,9 @@ public class CardFolderServiceImpl implements CardFolderService {
         return cardFolderRepository.findById(folderId)
                 .orElseThrow(() -> new CardFolderNotFoundException("Card folder not found! Id: " + folderId));
     }
+
+    @Override
+    public boolean existsByUserId(Long folderId, Long userId) {
+        return cardFolderRepository.existsByUserId(folderId, userId);
+    }
 }
