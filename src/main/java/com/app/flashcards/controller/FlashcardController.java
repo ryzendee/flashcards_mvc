@@ -22,7 +22,15 @@ public class FlashcardController {
 
     private final FlashcardFacade flashcardFacade;
 
+    @GetMapping("/{folderId}/flashcards-quiz")
+    public String getQuizView(@PathVariable Long folderId,
+                              Model model) {
+        List<FlashcardDtoResponse> flashcards = flashcardFacade.getListByFolderId(folderId);
 
+        model.addAttribute("flashcardsList", flashcards);
+
+        return "flashcard/flashcard-quiz";
+    }
 
     @GetMapping("/{folderId}/flashcards")
     public String getFlashcardsView(@PathVariable Long folderId,
