@@ -58,4 +58,10 @@ public class CardFolderServiceImpl implements CardFolderService {
                     return cardFolderRepository.save(entity);
                 }).orElseThrow(() -> new CardFolderNotFoundException("Card folder not found! Id: " + request.getId()));
     }
+
+    @Override
+    public CardFolder getById(Long folderId) {
+        return cardFolderRepository.findById(folderId)
+                .orElseThrow(() -> new CardFolderNotFoundException("Card folder not found! Id: " + folderId));
+    }
 }

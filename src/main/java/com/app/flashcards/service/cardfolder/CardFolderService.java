@@ -13,4 +13,5 @@ public interface CardFolderService {
     Page<CardFolder> getCardFolderPageByUserId(Long userId, int page, int size);
     void deleteById(Long folderId);
     CardFolder update(CardFolderUpdateDtoRequest request, CardFolderUpdateData data);
+    CardFolder getById(Long folderId);
 }
