@@ -1,5 +1,5 @@
 server:
-  port: 3001
+  port: 1230
 
 spring:
   devtools:
@@ -24,6 +24,11 @@ spring:
     resources:
       add-mappings: true
       static-locations: classpath:/static/
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD}
 
 minio:
   endpoint: ${MINIO_ENDPOINT}
