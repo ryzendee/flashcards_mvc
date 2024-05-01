@@ -47,7 +47,10 @@ public class ImageServiceImpl implements ImageService {
             String generatedPath = imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
             minioUtils.uploadFile(bucketName, generatedPath, image);
 
-            return minioUtils.getUrlToFile(bucketName, generatedPath);
+            String url =  minioUtils.getUrlToFile(bucketName, generatedPath);
+            log.info("Generated URL to file: {}", url);
+
+            return url;
         } catch (IOException | MinioException | NoSuchAlgorithmException | InvalidKeyException ex) {
             log.error("Image upload exception", ex);
             throw new ImageUploadException("Failed to upload image");
