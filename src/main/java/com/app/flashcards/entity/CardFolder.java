@@ -31,6 +31,7 @@ public class CardFolder {
     private User user;
 
     @OneToMany(mappedBy = "cardFolder", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private List<Flashcard> flashcardList;
 
     public CardFolder(String name, String description, String imageUrl, User user) {
