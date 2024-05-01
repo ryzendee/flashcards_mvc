@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/css/styles.css" th:href="@{/css/styles.css}"/>
+    <title>Quiz</title>
+</head>
+<body>
+<div class="container-fluid">
+
+    <header th:replace="~{fragments/navbar-fragment :: navbar}"></header>
+
+    <div id="flashcardContainer" class="mt-5">
+        <div th:each="flashcard : ${flashcardsList}">
+            <div class="card text-center mt-5 w-50 mx-auto">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${flashcard.name}">Special title treatment</h5>
+                    <p th:text="${flashcard.definition}" th:style="'display:none;'" class="definition"></p>
+                    <button class="button btn btn-primary mt-2" onclick="showDefinition(this)">
+                        Show Definition
+                    </button>
+                </div>
+                <div class="button-wrapper text-center mt-2 mb-2">
+                    <button type="submit" class="button btn btn-success w-25" onclick="removeCard(${status.index})">
+                        Ok
+                    </button>
+                    <button class="button btn btn-danger w-25" onclick="replaceCard(${status.index})">
+                        Try again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script th:inline="javascript">
+        let flashcards = /*[[${flashcardsList}]]*/ [];
+        let currentIndex = 0;
+
+        function initialize() {
+            showFlashcard(currentIndex);
+        }
+
+        function showFlashcard(index) {
+            let flashcard = flashcards[index];
+            let container = document.getElementById("flashcardContainer");
+            container.innerHTML = `
+            <div class="card text-center mt-5 w-50 mx-auto">
+                <div class="card-body">
+                    <h5 class="card-title">${flashcard.name}</h5>
+                    <p class="definition" style="display:none;">${flashcard.definition}</p>
+                    <button class="button btn btn-primary mt-2" onclick="showDefinition(this)">Show Definition</button>
+                </div>
+                <div class="button-wrapper text-center mt-2 mb-2">
+                    <button type="button" class="button btn btn-success w-25" onclick="removeCard()">Ok</button>
+                    <button type="button" class="button btn btn-danger w-25" onclick="replaceCard()">Try again</button>
+                </div>
+            </div>`;
+        }
+
+        function removeCard() {
+            flashcards.splice(currentIndex, 1);
+            if (currentIndex >= flashcards.length) {
+                currentIndex = 0;
+            }
+            if (flashcards.length === 0) {
+                showQuizEndedMessage();
+            }
+            showFlashcard(currentIndex);
+        }
+
+        function showQuizEndedMessage() {
+            let container = document.getElementById("flashcardContainer");
+            container.innerHTML = `
+        <div class="text-center fs-2 mt-5">Quiz was ended!</div>
+        <div class="button-wrapper text-center mt-4">
+            <button class="button btn btn-secondary w-10">
+                <a class="link-light link-underline-opacity-0 fs-3" href="/folders">Back to modules</a>
+            </button>
+        </div>`;
+        }
+
+        function replaceCard() {
+            if (currentIndex === flashcards.length - 1) {
+                return;
+            }
+            let currentCard = flashcards[currentIndex];
+            flashcards[currentIndex] = flashcards[flashcards.length - 1];
+            flashcards[flashcards.length - 1] = currentCard;
+            showFlashcard(currentIndex);
+        }
+
+        function showDefinition(button) {
+            let definition = button.parentNode.querySelector(".definition");
+            if (definition.style.display === "none") {
+                definition.style.display = "block";
+                button.innerText = "Hide Definition";
+            } else {
+                definition.style.display = "none";
+                button.innerText = "Show Definition";
+            }
+        }
+        initialize();
+    </script>
+
+</div>
+
+</body>
+</html>
