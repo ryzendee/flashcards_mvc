@@ -7,6 +7,7 @@ import com.app.flashcards.facade.cardfolder.CardFolderServiceFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -60,8 +61,10 @@ public class CardFolderController {
         return "redirect:/folders";
     }
 
+    @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #folderId)")
     @GetMapping("/folders-update")
-    public String getUpdateFolderView(@RequestParam Long folderId,
+    public String getUpdateFolderView(@SessionAttribute Long userId,
+                                      @RequestParam Long folderId,
                                       Model model) {
 
         CardFolderUpdateDtoRequest cardFolderUpdateDtoRequest = new CardFolderUpdateDtoRequest();
@@ -70,6 +73,9 @@ public class CardFolderController {
 
         return "cardfolder/cardfolder-update-view";
     }
+
+
+    @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #request.id)")
     @PostMapping("/folders-update")
     public String updateFolder(@Valid @ModelAttribute CardFolderUpdateDtoRequest request,
                                @SessionAttribute Long userId,
@@ -86,8 +92,10 @@ public class CardFolderController {
         return "redirect:/folders";
     }
 
+    @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #folderId)")
     @PostMapping("/folders-delete")
-    public String deleteFolder(@RequestParam Long folderId) {
+    public String deleteFolder(@SessionAttribute Long userId,
+                               @RequestParam Long folderId) {
         folderServiceFacade.deleteById(folderId);
 
         return "redirect:/folders";
