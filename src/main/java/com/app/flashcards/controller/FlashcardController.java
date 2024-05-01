@@ -10,10 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,14 +22,17 @@ public class FlashcardController {
 
     private final FlashcardFacade flashcardFacade;
 
-    @GetMapping("/flashcards")
-    public String getFlashcardsView(@RequestParam Long folderId,
+
+
+    @GetMapping("/{folderId}/flashcards")
+    public String getFlashcardsView(@PathVariable Long folderId,
                                     @RequestParam(defaultValue = DEFAULT_PAGE) int page,
                                     @RequestParam(defaultValue = DEFAULT_SIZE) int size,
                                     Model model) {
 
         Page<FlashcardDtoResponse> flashcardsPage = flashcardFacade.getPageByFolderId(folderId, page, size);
 
+        model.addAttribute("folderId", folderId);
         model.addAttribute("flashcardsPageList", flashcardsPage);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", flashcardsPage.getTotalPages());
@@ -38,8 +40,8 @@ public class FlashcardController {
         return "flashcard/flashcard-main-view";
     }
 
-    @GetMapping("/flashcards-add")
-    public String getAddFlashcardView(@RequestParam Long folderId,
+    @GetMapping("/{folderId}/flashcards-add")
+    public String getAddFlashcardView(@PathVariable Long folderId,
                                       Model model) {
 
         FlashcardCreateDtoRequest createDtoRequest = new FlashcardCreateDtoRequest();
@@ -52,6 +54,7 @@ public class FlashcardController {
 
     @PostMapping("/flashcards-add")
     public String saveCreatedFlashcard(@ModelAttribute @Valid FlashcardCreateDtoRequest request,
+                                       @SessionAttribute Long userId,
                                        BindingResult bindingResult,
                                        Model model) {
 
@@ -60,14 +63,14 @@ public class FlashcardController {
             return "flashcard/flashcard-add-view";
         }
 
-        flashcardFacade.createFlashcard(request);
+        flashcardFacade.createFlashcard(userId, request);
 
-        return "redirect:/flashcards";
+        return String.format("redirect:/%s/flashcards", request.getFolderId());
     }
 
-    @GetMapping("/flashcards-update")
-    public String getUpdateFlashcardView(@RequestParam Long flashcardId,
-                                         @RequestParam Long folderId,
+    @GetMapping("/{folderId}/flashcards-update")
+    public String getUpdateFlashcardView(@PathVariable Long folderId,
+                                         @RequestParam Long flashcardId,
                                          Model model) {
 
         FlashcardUpdateDtoRequest updateDtoRequest = new FlashcardUpdateDtoRequest();
@@ -81,6 +84,7 @@ public class FlashcardController {
 
     @PostMapping("/flashcards-update")
     public String saveUpdatedFlashcard(@ModelAttribute @Valid FlashcardUpdateDtoRequest request,
+                                       @SessionAttribute Long userId,
                                        BindingResult bindingResult,
                                        Model model) {
 
@@ -89,17 +93,18 @@ public class FlashcardController {
             return "flashcard/flashcard-add-view";
         }
 
-        flashcardFacade.updateFlashcard(request);
+        flashcardFacade.updateFlashcard(userId, request);
 
-        return "redirect:/flashcards";
+        return String.format("redirect:/%s/flashcards", request.getFolderId());
     }
 
-    @PostMapping("/flashcards-delete")
-    public String deleteFlashcard(@RequestParam Long flashcardId) {
+    @PostMapping("/{folderId}/flashcards-delete")
+    public String deleteFlashcard(@PathVariable Long folderId,
+                                  @RequestParam Long flashcardId) {
 
         flashcardFacade.deleteById(flashcardId);
 
-        return "redirect:/flashcards";
+        return String.format("redirect:/%s/flashcards", folderId);
     }
 
 }
