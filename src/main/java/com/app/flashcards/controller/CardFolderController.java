@@ -87,8 +87,8 @@ public class CardFolderController {
     }
 
     @PostMapping("/folders-delete")
-    public String deleteFolder(@RequestParam Long moduleId) {
-        folderServiceFacade.deleteById(moduleId);
+    public String deleteFolder(@RequestParam Long folderId) {
+        folderServiceFacade.deleteById(folderId);
 
         return "redirect:/folders";
     }
