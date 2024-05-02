@@ -1,6 +1,7 @@
 package com.app.flashcards.service.image;
 
 import com.app.flashcards.enums.ImagePath;
+import com.app.flashcards.exception.custom.ImageDeleteException;
 import com.app.flashcards.exception.custom.ImageUploadException;
 import com.app.flashcards.models.ImageData;
 import com.app.flashcards.utils.cloud.CloudStorageClient;
@@ -63,7 +64,7 @@ public class ImageServiceImpl implements ImageService {
             cloudStorageClient.deleteFile(bucketName, path);
         } catch (IOException | MinioException | NoSuchAlgorithmException | InvalidKeyException ex) {
             log.error("Image delete exception", ex);
-            throw new ImageUploadException("Failed to delete image");
+            throw new ImageDeleteException("Failed to delete image");
 
         }
     }
