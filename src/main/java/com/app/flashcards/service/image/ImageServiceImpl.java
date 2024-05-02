@@ -20,16 +20,16 @@ import java.security.NoSuchAlgorithmException;
 @Slf4j
 public class ImageServiceImpl implements ImageService {
 
-    private final CloudStorageClient minioUtils;
+    private final CloudStorageClient cloudStorageClient;
     private final ImagePathGenerator imagePathGenerator;
     private final String endpoint;
     private final String bucketName;
 
-    public ImageServiceImpl(CloudStorageClient minioUtils,
+    public ImageServiceImpl(CloudStorageClient cloudStorageClient,
                             ImagePathGenerator imagePathGenerator,
                             @Value("${minio.endpoint}") @NotBlank String endpoint,
                             @Value("${minio.bucket-name}") @NotBlank String bucketName) {
-        this.minioUtils = minioUtils;
+        this.cloudStorageClient = cloudStorageClient;
         this.imagePathGenerator = imagePathGenerator;
         this.endpoint = endpoint;
         this.bucketName = bucketName;
@@ -45,9 +45,9 @@ public class ImageServiceImpl implements ImageService {
 
         try {
             String generatedPath = imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
-            minioUtils.uploadFile(bucketName, generatedPath, image);
+            cloudStorageClient.uploadFile(bucketName, generatedPath, image);
 
-            String url =  minioUtils.getUrlToFile(bucketName, generatedPath);
+            String url =  cloudStorageClient.getUrlToFile(bucketName, generatedPath);
             log.info("Generated URL to file: {}", url);
 
             return url;
@@ -60,7 +60,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public void deleteImage(String bucketName, String path) {
         try {
-            minioUtils.deleteFile(bucketName, path);
+            cloudStorageClient.deleteFile(bucketName, path);
         } catch (IOException | MinioException | NoSuchAlgorithmException | InvalidKeyException ex) {
             log.error("Image delete exception", ex);
             throw new ImageUploadException("Failed to delete image");
