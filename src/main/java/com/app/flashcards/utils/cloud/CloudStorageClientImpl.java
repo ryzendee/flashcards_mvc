@@ -1,4 +1,4 @@
-package com.app.flashcards.utils.minio;
+package com.app.flashcards.utils.cloud;
 
 import io.minio.*;
 import io.minio.errors.*;
@@ -15,7 +15,7 @@ import java.security.NoSuchAlgorithmException;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class MinioUtilsImpl implements MinioUtils {
+public class CloudStorageClientImpl implements CloudStorageClient {
 
     private final MinioClient minioClient;
 

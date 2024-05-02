@@ -3,7 +3,7 @@ package com.app.flashcards.service.image;
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.exception.custom.ImageUploadException;
 import com.app.flashcards.models.ImageData;
-import com.app.flashcards.utils.minio.MinioUtils;
+import com.app.flashcards.utils.cloud.CloudStorageClient;
 import com.app.flashcards.utils.path.ImagePathGenerator;
 import io.minio.errors.MinioException;
 import jakarta.validation.constraints.NotBlank;
@@ -20,12 +20,12 @@ import java.security.NoSuchAlgorithmException;
 @Slf4j
 public class ImageServiceImpl implements ImageService {
 
-    private final MinioUtils minioUtils;
+    private final CloudStorageClient minioUtils;
     private final ImagePathGenerator imagePathGenerator;
     private final String endpoint;
     private final String bucketName;
 
-    public ImageServiceImpl(MinioUtils minioUtils,
+    public ImageServiceImpl(CloudStorageClient minioUtils,
                             ImagePathGenerator imagePathGenerator,
                             @Value("${minio.endpoint}") @NotBlank String endpoint,
                             @Value("${minio.bucket-name}") @NotBlank String bucketName) {
