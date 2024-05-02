@@ -4,5 +4,4 @@ import com.app.flashcards.models.ImageData;
 
 public interface ImageService {
     String uploadImage(ImageData imageData);
-    void deleteImage(String bucketName, String path);
 }
