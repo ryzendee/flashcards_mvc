@@ -66,7 +66,7 @@ public class CardFolderServiceImpl implements CardFolderService {
     }
 
     @Override
-    public boolean existsByUserId(Long folderId, Long userId) {
-        return cardFolderRepository.existsByUserId(folderId, userId);
+    public boolean existsByIdAndUserId(Long folderId, Long userId) {
+        return cardFolderRepository.existsByIdAndUserId(folderId, userId);
     }
 }

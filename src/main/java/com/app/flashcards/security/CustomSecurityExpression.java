@@ -2,16 +2,18 @@ package com.app.flashcards.security;
 
 import com.app.flashcards.service.cardfolder.CardFolderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.SessionAttribute;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class CustomSecurityExpression {
 
     private final CardFolderService cardFolderService;
 
     public boolean isFolderOwner(Long userId, Long folderId) {
-        return cardFolderService.existsByUserId(userId, folderId);
+        log.info("Checking that user is module owner: userId={}, folderId={}", userId, folderId);
+        return cardFolderService.existsByIdAndUserId(userId, folderId);
     }
 }
