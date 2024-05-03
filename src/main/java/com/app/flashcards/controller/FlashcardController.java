@@ -68,7 +68,7 @@ public class FlashcardController {
     }
 
     @PostMapping("/flashcards-add")
-    public String saveCreatedFlashcard(@ModelAttribute @Valid FlashcardCreateDtoRequest request,
+    public String saveCreatedFlashcard(@ModelAttribute("flashcard") @Valid FlashcardCreateDtoRequest request,
                                        @SessionAttribute Long userId,
                                        BindingResult bindingResult,
                                        Model model) {
@@ -100,7 +100,7 @@ public class FlashcardController {
     }
 
     @PostMapping("/flashcards-update")
-    public String saveUpdatedFlashcard(@ModelAttribute @Valid FlashcardUpdateDtoRequest request,
+    public String saveUpdatedFlashcard(@ModelAttribute("flashcard") @Valid FlashcardUpdateDtoRequest request,
                                        @SessionAttribute Long userId,
                                        BindingResult bindingResult,
                                        Model model) {

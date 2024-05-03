@@ -46,10 +46,10 @@ public class CardFolderController {
     }
 
     @PostMapping("/folders-add")
-    public String saveCreatedFolder(@Valid @ModelAttribute CardFolderCreateDtoRequest cardFolderCreateDtoRequest,
-                               @SessionAttribute Long userId,
-                               BindingResult bindingResult,
-                               Model model) {
+    public String saveCreatedFolder(@Valid @ModelAttribute("cardFolder") CardFolderCreateDtoRequest cardFolderCreateDtoRequest,
+                                    BindingResult bindingResult,
+                                    @SessionAttribute Long userId,
+                                    Model model) {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
@@ -77,9 +77,9 @@ public class CardFolderController {
 
     @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #request.id)")
     @PostMapping("/folders-update")
-    public String updateFolder(@Valid @ModelAttribute CardFolderUpdateDtoRequest request,
-                               @SessionAttribute Long userId,
+    public String updateFolder(@Valid @ModelAttribute("cardFolder") CardFolderUpdateDtoRequest request,
                                BindingResult bindingResult,
+                               @SessionAttribute Long userId,
                                Model model) {
 
         if (bindingResult.hasErrors()) {
