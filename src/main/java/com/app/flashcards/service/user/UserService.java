@@ -6,8 +6,6 @@ import com.app.flashcards.entity.User;
 public interface UserService {
 
     User createUser(SignUpDtoRequest signUpDtoRequest);
-    User updateUser(User user);
     User getUserById(Long userId);
-    void deleteUserById(Long id);
 
 }
