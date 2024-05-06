@@ -43,12 +43,4 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found! Id: " + userId));
     }
 
-    @Override
-    public User updateUser(User user) {
-        return null;
-    }
-
-    @Override
-    public void deleteUserById(Long id) {
-    }
 }
