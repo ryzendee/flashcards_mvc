@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class CardFolderServiceTest {
     private CardFolderFactory cardFolderFactory;
 
     @Test
-    void createCardFolder() {
+    void createCardFolder_withRequestAndData_shouldCreate() {
         CardFolderCreateDtoRequest createDtoRequest = Mockito.mock(CardFolderCreateDtoRequest.class);
         CardFolderCreationData creationData = Mockito.mock(CardFolderCreationData.class);
         CardFolder expectedFolder = getCardFolderWithId();
@@ -59,24 +60,26 @@ public class CardFolderServiceTest {
     }
 
     @Test
-    void getCardFolderPageByUserId() {
+    void getCardFolderPageByUserId_withPageAndSize_returnsPage() {
         int page = 0;
         int size = 1;
 
         CardFolder cardFolder = getCardFolderWithId();
         Page<CardFolder> entityPage = new PageImpl<>(List.of(cardFolder));
+        Pageable pageable = PageRequest.of(page, size);
 
-        when(cardFolderRepository.findAllByUserId(eq(ID), any(Pageable.class)))
+
+        when(cardFolderRepository.findAllByUserId(ID, pageable))
                 .thenReturn(entityPage);
 
         Page<CardFolder> actualPage = cardFolderService.getCardFolderPageByUserId(ID, page, size);
         assertThat(actualPage).containsAll(entityPage);
 
-        verify(cardFolderRepository).findAllByUserId(eq(ID), any(Pageable.class));
+        verify(cardFolderRepository).findAllByUserId(ID, pageable);
     }
 
     @Test
-    void deleteById() {
+    void deleteById_withId_shouldInvokeRepository() {
         doNothing()
                 .when(cardFolderRepository).deleteById(ID);
 
@@ -86,7 +89,7 @@ public class CardFolderServiceTest {
     }
 
     @Test
-    void update() {
+    void update_existsCardFolder_shouldUpdate() {
         CardFolderUpdateDtoRequest request = new CardFolderUpdateDtoRequest(ID, "test-name", "test-descr", null);
         CardFolderUpdateData updateData = new CardFolderUpdateData("test-imageUrl");
 
@@ -99,6 +102,7 @@ public class CardFolderServiceTest {
 
         CardFolder actualEntity = cardFolderService.update(request, updateData);
 
+        assertThat(actualEntity).isEqualTo(entityToUpdate);
         assertThat(actualEntity.getName()).isEqualTo(request.getName());
         assertThat(actualEntity.getDescription()).isEqualTo(request.getDescription());
         assertThat(actualEntity.getImageUrl()).isEqualTo(updateData.imageUrl());
@@ -120,6 +124,41 @@ public class CardFolderServiceTest {
                 .isInstanceOf(CardFolderNotFoundException.class);
 
         verify(cardFolderRepository).findById(ID);
+    }
+
+    @Test
+    void getById_existsId_returnsCardFolder() {
+        CardFolder expectedCardFolder = getCardFolderWithId();
+
+        when(cardFolderRepository.findById(ID))
+                .thenReturn(Optional.of(expectedCardFolder));
+
+        CardFolder actualCardFolder = cardFolderService.getById(ID);
+        assertThat(actualCardFolder).isEqualTo(expectedCardFolder);
+
+        verify(cardFolderRepository).findById(ID);
+    }
+
+    @Test
+    void getById_nonExistsId_throwCardFolderNotFoundEx() {
+        when(cardFolderRepository.findById(ID))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> cardFolderService.getById(ID))
+                .isInstanceOf(CardFolderNotFoundException.class);
+
+        verify(cardFolderRepository).findById(ID);
+    }
+
+    @Test
+    void existsByIdAndUserId_existsBothIds_returnsTrue() {
+        when(cardFolderRepository.existsByIdAndUserId(ID, ID))
+                .thenReturn(true);
+
+        boolean result = cardFolderService.existsByIdAndUserId(ID, ID);
+        assertThat(result).isTrue();
+
+        verify(cardFolderRepository).existsByIdAndUserId(ID, ID);
     }
 
     private CardFolder getCardFolderWithId() {
