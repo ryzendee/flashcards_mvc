@@ -3,6 +3,7 @@ package com.app.flashcards.unit.service;
 import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
 import com.app.flashcards.exception.custom.SignUpException;
+import com.app.flashcards.exception.custom.UserNotFoundException;
 import com.app.flashcards.factory.user.UserFactory;
 import com.app.flashcards.repository.UserRepository;
 import com.app.flashcards.service.user.UserServiceImpl;
@@ -13,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -65,6 +68,32 @@ public class UserServiceTest {
 
         verify(userFactory).createFromSignUp(signUpDtoRequest, passwordEncoder);
         verify(userRepository).save(user);
+    }
+
+    @Test
+    void getUserById_existsId_returnsUser() {
+        User expectedUser = getUser();
+
+        when(userRepository.findById(ID))
+                .thenReturn(Optional.of(expectedUser));
+
+        User actualUser = userService.getUserById(ID);
+        assertThat(actualUser).isEqualTo(expectedUser);
+
+        verify(userRepository).findById(ID);
+    }
+
+    @Test
+    void getUserById_nonExistsId_throwsUserNotFoundEx() {
+        User expectedUser = getUser();
+
+        when(userRepository.findById(ID))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.getUserById(ID))
+                .isInstanceOf(UserNotFoundException.class);
+
+        verify(userRepository).findById(ID);
     }
 
     private SignUpDtoRequest getSignUpDto() {
