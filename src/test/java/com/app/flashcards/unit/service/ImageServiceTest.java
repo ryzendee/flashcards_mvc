@@ -3,13 +3,14 @@ package com.app.flashcards.unit.service;
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.exception.custom.ImageUploadException;
 import com.app.flashcards.models.ImageData;
+import com.app.flashcards.service.image.ImageService;
 import com.app.flashcards.service.image.ImageServiceImpl;
 import com.app.flashcards.utils.cloud.CloudStorageClient;
 import com.app.flashcards.utils.path.ImagePathGenerator;
 import io.minio.errors.MinioException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,18 +22,24 @@ import java.security.NoSuchAlgorithmException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 @ExtendWith(MockitoExtension.class)
 public class ImageServiceTest {
     private static final Long ID = 1L;
-    private static final ImagePath IMAGE_PATH = ImagePath.DEFAULT;
-    @InjectMocks
-    private ImageServiceImpl imageService;
-
+    private static final String GENERATED_PATH = "test-generated-path";
+    private static final String BUCKET_NAME = "test-bucket";
+    private ImageService imageService;
     @Mock
     private CloudStorageClient cloudStorageClient;
     @Mock
     private ImagePathGenerator imagePathGenerator;
+
+    @BeforeEach
+    void setUp() {
+        openMocks(this);
+        imageService = new ImageServiceImpl(cloudStorageClient, imagePathGenerator, "test-endpoint", BUCKET_NAME);
+    }
 
     @Test
     void uploadImage_emptyImage_returnsDefaultPath() {
@@ -52,14 +59,15 @@ public class ImageServiceTest {
     void uploadImage_imageNotEmpty_returnsUrlToImage() throws Exception {
         ImageData imageData = getImageDataWithMockedFile();
         MultipartFile image = imageData.image();
-        String path = "test-path";
         String expectedUrl = "test-url";
 
         when(image.isEmpty())
                 .thenReturn(false);
         when(imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath()))
-                .thenReturn(path);
-        when(cloudStorageClient.getUrlToFile(any(String.class), eq(path)))
+                .thenReturn(GENERATED_PATH);
+        doNothing()
+                .when(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
+        when(cloudStorageClient.getUrlToFile(BUCKET_NAME, GENERATED_PATH))
                 .thenReturn(expectedUrl);
 
         String actualUrl = imageService.uploadImage(imageData);
@@ -67,60 +75,74 @@ public class ImageServiceTest {
 
         verify(image).isEmpty();
         verify(imagePathGenerator).generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
-        verify(cloudStorageClient).getUrlToFile(any(String.class), eq(path));
+        verify(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
+        verify(cloudStorageClient).getUrlToFile(BUCKET_NAME, GENERATED_PATH);
     }
 
     //Upload with exceptions
     @Test
     void uploadImage_clientThrowsIOEx_shouldThrowImageUploadEx() throws Exception {
         ImageData imageData = getImageDataWithMockedFile();
+        MultipartFile image = imageData.image();
 
+        when(imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath()))
+                .thenReturn(GENERATED_PATH);
         doThrow(new IOException("test-msg"))
-                .when(cloudStorageClient).uploadFile(any(String.class), any(String.class), eq(imageData.image()));
+                .when(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
 
         assertThatThrownBy(() -> imageService.uploadImage(imageData))
                 .isInstanceOf(ImageUploadException.class);
 
-        verify(cloudStorageClient).uploadFile(any(String.class), any(String.class) ,eq(imageData.image()));
+        verify(imagePathGenerator).generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
+        verify(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
     }
     @Test
     void uploadImage_clientThrowsMinioEx_shouldThrowImageUploadEx() throws Exception {
         ImageData imageData = getImageDataWithMockedFile();
+        MultipartFile image = imageData.image();
 
+        when(imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath()))
+                .thenReturn(GENERATED_PATH);
         doThrow(new MinioException("test-msg"))
-                .when(cloudStorageClient).uploadFile(any(String.class), any(String.class), eq(imageData.image()));
+                .when(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
 
         assertThatThrownBy(() -> imageService.uploadImage(imageData))
                 .isInstanceOf(ImageUploadException.class);
 
-        verify(cloudStorageClient).uploadFile(any(String.class), any(String.class) ,eq(imageData.image()));
-
+        verify(imagePathGenerator).generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
+        verify(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
     }
     @Test
     void uploadImage_clientThrowsNoSuchAlgorithmEx_shouldThrowImageUploadEx() throws Exception {
         ImageData imageData = getImageDataWithMockedFile();
+        MultipartFile image = imageData.image();
 
+        when(imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath()))
+                .thenReturn(GENERATED_PATH);
         doThrow(new NoSuchAlgorithmException("test-msg"))
-                .when(cloudStorageClient).uploadFile(any(String.class), any(String.class), eq(imageData.image()));
+                .when(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
 
         assertThatThrownBy(() -> imageService.uploadImage(imageData))
                 .isInstanceOf(ImageUploadException.class);
 
-        verify(cloudStorageClient).uploadFile(any(String.class), any(String.class) ,eq(imageData.image()));
-
+        verify(imagePathGenerator).generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
+        verify(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
     }
     @Test
     void uploadImage_clientThrowsInvalidKeyEx_shouldThrowImageUploadEx() throws Exception {
         ImageData imageData = getImageDataWithMockedFile();
+        MultipartFile image = imageData.image();
 
+        when(imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath()))
+                .thenReturn(GENERATED_PATH);
         doThrow(new InvalidKeyException("test-msg"))
-                .when(cloudStorageClient).uploadFile(any(String.class), any(String.class), eq(imageData.image()));
+                .when(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
 
         assertThatThrownBy(() -> imageService.uploadImage(imageData))
                 .isInstanceOf(ImageUploadException.class);
 
-        verify(cloudStorageClient).uploadFile(any(String.class), any(String.class) ,eq(imageData.image()));
-
+        verify(imagePathGenerator).generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
+        verify(cloudStorageClient).uploadFile(BUCKET_NAME,GENERATED_PATH, imageData.image());
     }
 
     private ImageData getImageDataWithMockedFile() {
