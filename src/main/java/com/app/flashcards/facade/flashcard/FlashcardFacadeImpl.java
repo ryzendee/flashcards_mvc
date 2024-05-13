@@ -45,8 +45,7 @@ public class FlashcardFacadeImpl implements FlashcardFacade {
     public void createFlashcard(Long userId, FlashcardCreateDtoRequest createDtoRequest) {
         ImageData imageData = createImageData(userId, createDtoRequest.getImage());
         String imageUrl = imageService.uploadImage(imageData);
-        CardFolder cardFolder = cardFolderService.getById(createDtoRequest.getFolderId());
-        FlashcardCreationData creationData = new FlashcardCreationData(cardFolder, imageUrl);
+        FlashcardCreationData creationData = new FlashcardCreationData(imageUrl);
         flashcardService.createFlashcard(createDtoRequest, creationData);
     }
 
