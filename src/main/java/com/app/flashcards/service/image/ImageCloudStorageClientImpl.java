@@ -1,8 +1,6 @@
 package com.app.flashcards.service.image;
 
 import com.app.flashcards.enums.ImagePath;
-import com.app.flashcards.exception.custom.GenerateUrlException;
-import com.app.flashcards.exception.custom.ImageUploadException;
 import com.app.flashcards.models.ImageData;
 import com.app.flashcards.utils.path.ImagePathGenerator;
 import io.minio.GetPresignedObjectUrlArgs;
@@ -26,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
     private static final int IMAGE_EXPIRATION_TIME = 10;
+    private static final String DEFAULT_PATH = ImagePath.DEFAULT.getPathToImage();
 
     private final MinioClient minioClient;
     private final ImagePathGenerator imagePathGenerator;
@@ -44,7 +43,7 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
         MultipartFile image = imageData.image();
 
         if (image.isEmpty()) {
-            return ImagePath.DEFAULT.getPathToImage();
+            return DEFAULT_PATH;
         }
 
         try {
@@ -65,13 +64,17 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
             return generatedPath;
         } catch (IOException | MinioException | NoSuchAlgorithmException | InvalidKeyException ex) {
             log.error("Image upload exception", ex);
-            throw new ImageUploadException("Failed to upload image: " + ex.getMessage());
+            return DEFAULT_PATH;
         }
     }
 
     @Override
     public String generateUrlToImage(String path) {
         try {
+            if (path.equals(DEFAULT_PATH)) {
+                return path;
+            }
+
             return minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.GET)
@@ -83,13 +86,17 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
                  IOException | NoSuchAlgorithmException | InvalidKeyException |
                  InvalidResponseException | XmlParserException | InternalException ex) {
             log.error("Failed to generate url to file", ex);
-            throw new GenerateUrlException("Cannot generate url to file: " + ex.getMessage());
+            return DEFAULT_PATH;
         }
     }
 
     @Override
     public boolean deleteImage(String path) {
         try {
+            if (path.equals(DEFAULT_PATH)) {
+                return false;
+            }
+
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucketName)
