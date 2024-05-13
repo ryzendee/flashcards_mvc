@@ -38,7 +38,7 @@ public class ImageServiceTest {
     @BeforeEach
     void setUp() {
         openMocks(this);
-        imageService = new ImageServiceImpl(cloudStorageClient, imagePathGenerator, "test-endpoint", BUCKET_NAME);
+        imageService = new ImageServiceImpl(cloudStorageClient, imagePathGenerator, BUCKET_NAME);
     }
 
     @Test

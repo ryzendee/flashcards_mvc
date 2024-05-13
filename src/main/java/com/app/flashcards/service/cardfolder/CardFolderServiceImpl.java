@@ -11,7 +11,7 @@ import com.app.flashcards.mapper.cardfolder.CardFolderMapper;
 import com.app.flashcards.models.ImageData;
 import com.app.flashcards.repository.CardFolderRepository;
 import com.app.flashcards.repository.UserRepository;
-import com.app.flashcards.service.image.ImageService;
+import com.app.flashcards.service.image.ImageCloudStorageClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,7 +30,7 @@ public class CardFolderServiceImpl implements CardFolderService {
     private final UserRepository userRepository;
     private final CardFolderFactory cardFolderFactory;
     private final CardFolderMapper cardFolderMapper;
-    private final ImageService imageService;
+    private final ImageCloudStorageClient imageCloudStorageClient;
 
     @Transactional
     @Override
@@ -38,7 +38,7 @@ public class CardFolderServiceImpl implements CardFolderService {
         userRepository.findById(userId)
                 .ifPresentOrElse(user -> {
                     ImageData imageData = buildImageData(userId, createRequest.getImage());
-                    String imageUrl = imageService.uploadImage(imageData);
+                    String imageUrl = imageCloudStorageClient.uploadImage(imageData);
 
                     CardFolder cardFolder = cardFolderFactory.createFromRequest(createRequest);
                     cardFolder.setUser(user);
@@ -66,7 +66,7 @@ public class CardFolderServiceImpl implements CardFolderService {
         cardFolderRepository.findById(folderId)
                 .ifPresent(entity -> {
                     cardFolderRepository.delete(entity);
-                    imageService.deleteImage(entity.getImageUrl());
+                    imageCloudStorageClient.deleteImage(entity.getImageUrl());
                     log.info("Deleted card folder: {}", entity);
                 });
     }
@@ -77,7 +77,7 @@ public class CardFolderServiceImpl implements CardFolderService {
         cardFolderRepository.findById(request.getId())
                 .ifPresent(entity -> {
                     ImageData imageData = buildImageData(entity.getUser().getId(), request.getImage());
-                    String imageUrl = imageService.uploadImage(imageData);
+                    String imageUrl = imageCloudStorageClient.uploadImage(imageData);
 
                     entity.setImageUrl(imageUrl);
                     entity.setName(request.getName());
