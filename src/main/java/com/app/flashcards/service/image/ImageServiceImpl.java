@@ -22,16 +22,13 @@ public class ImageServiceImpl implements ImageService {
 
     private final CloudStorageClient cloudStorageClient;
     private final ImagePathGenerator imagePathGenerator;
-    private final String endpoint;
     private final String bucketName;
 
     public ImageServiceImpl(CloudStorageClient cloudStorageClient,
                             ImagePathGenerator imagePathGenerator,
-                            @Value("${minio.endpoint}") @NotBlank String endpoint,
                             @Value("${minio.bucket-name}") @NotBlank String bucketName) {
         this.cloudStorageClient = cloudStorageClient;
         this.imagePathGenerator = imagePathGenerator;
-        this.endpoint = endpoint;
         this.bucketName = bucketName;
     }
 
@@ -44,10 +41,10 @@ public class ImageServiceImpl implements ImageService {
         }
 
         try {
-            String generatedPath = imagePathGenerator.generatePath(String.valueOf(imageData.userId()), image.getOriginalFilename(), imageData.imagePath());
-            cloudStorageClient.uploadFile(bucketName, generatedPath, image);
+            String generatedPath = imagePathGenerator.generatePath(imageData);
+            cloudStorageClient.uploadFile(this.bucketName, generatedPath, image);
 
-            String url =  cloudStorageClient.getUrlToFile(bucketName, generatedPath);
+            String url =  cloudStorageClient.getUrlToFile(this.bucketName, generatedPath);
             log.info("Generated URL to file: {}", url);
 
             return url;
@@ -57,4 +54,14 @@ public class ImageServiceImpl implements ImageService {
         }
     }
 
+    @Override
+    public boolean deleteImage(String path) {
+        try {
+            cloudStorageClient.deleteFile(this.bucketName, path);
+            return true;
+        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException ex) {
+            log.error("Image delete exception", ex);
+            return false;
+        }
+    }
 }
