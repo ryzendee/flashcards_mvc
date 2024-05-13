@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,11 +30,13 @@ public class FlashcardServiceImpl implements FlashcardService {
     private final FlashcardRepository flashcardRepository;
     private final CardFolderRepository cardFolderRepository;
 
+    @Transactional(readOnly = true)
     @Override
     public List<Flashcard> getListByFolderId(Long folderId) {
         return flashcardRepository.findAllByCardFolderId(folderId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<Flashcard> getPageByFolderId(Long folderId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -41,12 +44,14 @@ public class FlashcardServiceImpl implements FlashcardService {
         return flashcardRepository.findAllByCardFolderId(folderId, pageable);
     }
 
+    @Transactional
     @Override
     public void deleteFlashcardById(Long flashcardId) {
         log.info("Deleting flashcard with id: {}", flashcardId);
         flashcardRepository.deleteById(flashcardId);
     }
 
+    @Transactional
     @Override
     public Flashcard createFlashcard(FlashcardCreateDtoRequest createDtoRequest, FlashcardCreationData creationData) {
         return cardFolderRepository.findById(createDtoRequest.getFolderId())
@@ -59,6 +64,7 @@ public class FlashcardServiceImpl implements FlashcardService {
                 }).orElseThrow(() -> new CardFolderNotFoundException("Cannot create flashcard, because card folder not found! Card Folder Id: " + createDtoRequest.getFolderId()));
     }
 
+    @Transactional
     @Override
     public Flashcard updateFlashcard(FlashcardUpdateDtoRequest updateDtoRequest, FlashcardUpdateData updateData) {
         return flashcardRepository.findById(updateDtoRequest.getId())
