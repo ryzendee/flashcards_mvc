@@ -20,10 +20,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
+    private static final int IMAGE_EXPIRATION_TIME = 10;
 
     private final MinioClient minioClient;
     private final ImagePathGenerator imagePathGenerator;
@@ -67,6 +69,7 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
         }
     }
 
+    @Override
     public String generateUrlToImage(String path) {
         try {
             return minioClient.getPresignedObjectUrl(
@@ -74,6 +77,7 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
                             .method(Method.GET)
                             .bucket(bucketName)
                             .object(path)
+                            .expiry(IMAGE_EXPIRATION_TIME, TimeUnit.HOURS)
                             .build());
         } catch (ServerException | InsufficientDataException | ErrorResponseException |
                  IOException | NoSuchAlgorithmException | InvalidKeyException |
