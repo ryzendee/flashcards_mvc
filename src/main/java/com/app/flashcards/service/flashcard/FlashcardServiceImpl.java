@@ -2,12 +2,15 @@ package com.app.flashcards.service.flashcard;
 
 import com.app.flashcards.dto.request.FlashcardCreateDtoRequest;
 import com.app.flashcards.dto.request.FlashcardUpdateDtoRequest;
+import com.app.flashcards.entity.CardFolder;
 import com.app.flashcards.entity.Flashcard;
+import com.app.flashcards.exception.custom.CardFolderNotFoundException;
 import com.app.flashcards.exception.custom.FlashcardNotFoundException;
 import com.app.flashcards.factory.flashcard.FlashcardFactory;
 import com.app.flashcards.models.FlashcardCreationData;
 import com.app.flashcards.models.FlashcardUpdateData;
 import com.app.flashcards.repository.FlashcardRepository;
+import com.app.flashcards.repository.CardFolderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,8 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FlashcardServiceImpl implements FlashcardService {
 
-    private final FlashcardRepository flashcardRepository;
     private final FlashcardFactory flashcardFactory;
+    private final FlashcardRepository flashcardRepository;
+    private final CardFolderRepository cardFolderRepository;
 
     @Override
     public List<Flashcard> getListByFolderId(Long folderId) {
@@ -45,11 +49,14 @@ public class FlashcardServiceImpl implements FlashcardService {
 
     @Override
     public Flashcard createFlashcard(FlashcardCreateDtoRequest createDtoRequest, FlashcardCreationData creationData) {
-        Flashcard flashcard = flashcardFactory.createFromRequestAndData(createDtoRequest, creationData);
-        flashcardRepository.save(flashcard);
-        log.info("Flashcard was saved: {}", flashcard);
-
-        return flashcard;
+        return cardFolderRepository.findById(createDtoRequest.getFolderId())
+                .map(folder -> {
+                    Flashcard flashcard = flashcardFactory.createFromRequestAndData(createDtoRequest, creationData);
+                    flashcard.setCardFolder(folder);
+                    flashcardRepository.save(flashcard);
+                    log.info("Flashcard was saved: {}", flashcard);
+                    return flashcard;
+                }).orElseThrow(() -> new CardFolderNotFoundException("Cannot create flashcard, because card folder not found! Card Folder Id: " + createDtoRequest.getFolderId()));
     }
 
     @Override
