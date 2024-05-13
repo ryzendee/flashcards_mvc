@@ -1,6 +1,4 @@
 package com.app.flashcards.models;
 
-import com.app.flashcards.entity.User;
-
-public record CardFolderCreationData(User user, String imageUrl) {
+public record CardFolderCreationData(Long userId, String imageUrl) {
 }
