@@ -3,7 +3,7 @@ package com.app.flashcards.controller;
 import com.app.flashcards.dto.request.CardFolderCreateDtoRequest;
 import com.app.flashcards.dto.request.CardFolderUpdateDtoRequest;
 import com.app.flashcards.dto.response.CardFolderDtoResponse;
-import com.app.flashcards.facade.cardfolder.CardFolderServiceFacade;
+import com.app.flashcards.service.cardfolder.CardFolderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,10 +16,13 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequiredArgsConstructor
 public class CardFolderController {
+
+    private static final String REDIRECT_TO_FOLDERS = "redirect:/folders";
+
     private static final String DEFAULT_PAGE = "0";
     private static final String DEFAULT_SIZE = "10";
 
-    private final CardFolderServiceFacade folderServiceFacade;
+    private final CardFolderService cardFolderService;
 
     @GetMapping("/folders")
     public String getCardFoldersView(@SessionAttribute Long userId,
@@ -27,7 +30,7 @@ public class CardFolderController {
                                           @RequestParam(defaultValue = DEFAULT_SIZE) int size,
                                           Model model) {
 
-        Page<CardFolderDtoResponse> foldersPage = folderServiceFacade.getCardFolderPageByUserId(userId, page, size);
+        Page<CardFolderDtoResponse> foldersPage = cardFolderService.getCardFolderPageByUserId(userId, page, size);
 
         model.addAttribute("foldersPageList", foldersPage);
         model.addAttribute("currentPage", page);
@@ -56,9 +59,9 @@ public class CardFolderController {
             return "cardfolder/cardfolder-add-view";
         }
 
-        folderServiceFacade.createCardFolder(userId, cardFolderCreateDtoRequest);
+        cardFolderService.createCardFolder(userId, cardFolderCreateDtoRequest);
 
-        return "redirect:/folders";
+        return REDIRECT_TO_FOLDERS;
     }
 
     @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #folderId)")
@@ -87,17 +90,18 @@ public class CardFolderController {
             return "cardfolder/cardfolder-update-view";
         }
 
-        folderServiceFacade.updateCardFolder(userId, request);
+        cardFolderService.updateCardFolder(userId, request);
 
-        return "redirect:/folders";
+        return REDIRECT_TO_FOLDERS;
     }
 
     @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #folderId)")
     @PostMapping("/folders-delete")
     public String deleteFolder(@SessionAttribute Long userId,
                                @RequestParam Long folderId) {
-        folderServiceFacade.deleteById(folderId);
 
-        return "redirect:/folders";
+        cardFolderService.deleteById(folderId);
+
+        return REDIRECT_TO_FOLDERS;
     }
 }
