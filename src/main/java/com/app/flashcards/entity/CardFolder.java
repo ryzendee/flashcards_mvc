@@ -3,6 +3,7 @@ package com.app.flashcards.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -32,7 +33,12 @@ public class CardFolder {
 
     @OneToMany(mappedBy = "cardFolder", cascade = CascadeType.ALL)
     @ToString.Exclude
-    private List<Flashcard> flashcardList;
+    private List<Flashcard> flashcardList = new ArrayList<>();
+
+    public CardFolder(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 
     public CardFolder(String name, String description, String imageUrl, User user) {
         this.name = name;
