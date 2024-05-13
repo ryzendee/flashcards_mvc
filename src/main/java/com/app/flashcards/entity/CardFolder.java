@@ -25,7 +25,7 @@ public class CardFolder {
     private String description;
 
     @Column(columnDefinition = "TEXT")
-    private String imageUrl;
+    private String imagePath;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -40,10 +40,10 @@ public class CardFolder {
         this.description = description;
     }
 
-    public CardFolder(String name, String description, String imageUrl, User user) {
+    public CardFolder(String name, String description, String imagePath, User user) {
         this.name = name;
         this.description = description;
-        this.imageUrl = imageUrl;
+        this.imagePath = imagePath;
         this.user = user;
     }
 }

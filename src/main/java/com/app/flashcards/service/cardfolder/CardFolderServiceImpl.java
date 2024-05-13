@@ -38,11 +38,11 @@ public class CardFolderServiceImpl implements CardFolderService {
         userRepository.findById(userId)
                 .ifPresentOrElse(user -> {
                     ImageData imageData = buildImageData(userId, createRequest.getImage());
-                    String imageUrl = imageCloudStorageClient.uploadImage(imageData);
+                    String imagePath = imageCloudStorageClient.uploadImage(imageData);
 
                     CardFolder cardFolder = cardFolderFactory.createFromRequest(createRequest);
                     cardFolder.setUser(user);
-                    cardFolder.setImageUrl(imageUrl);
+                    cardFolder.setImagePath(imagePath);
 
                     cardFolderRepository.save(cardFolder);
                     log.info("Card Folder was saved: {}", cardFolder);
@@ -56,8 +56,14 @@ public class CardFolderServiceImpl implements CardFolderService {
     @Override
     public Page<CardFolderDtoResponse> getCardFolderPageByUserId(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+
         return cardFolderRepository.findAllByUserId(userId, pageable)
-                .map(cardFolderMapper::toDto);
+                .map(entity -> {
+                    CardFolderDtoResponse cardFolderDtoResponse = cardFolderMapper.toDto(entity);
+                    String imageUrl = imageCloudStorageClient.generateUrlToImage(entity.getImagePath());
+                    cardFolderDtoResponse.setImageUrl(imageUrl);
+                    return cardFolderDtoResponse;
+                });
     }
 
     @Transactional
@@ -66,7 +72,7 @@ public class CardFolderServiceImpl implements CardFolderService {
         cardFolderRepository.findById(folderId)
                 .ifPresent(entity -> {
                     cardFolderRepository.delete(entity);
-                    imageCloudStorageClient.deleteImage(entity.getImageUrl());
+                    imageCloudStorageClient.deleteImage(entity.getImagePath());
                     log.info("Deleted card folder: {}", entity);
                 });
     }
@@ -77,9 +83,9 @@ public class CardFolderServiceImpl implements CardFolderService {
         cardFolderRepository.findById(request.getId())
                 .ifPresent(entity -> {
                     ImageData imageData = buildImageData(entity.getUser().getId(), request.getImage());
-                    String imageUrl = imageCloudStorageClient.uploadImage(imageData);
+                    String imagePath = imageCloudStorageClient.uploadImage(imageData);
 
-                    entity.setImageUrl(imageUrl);
+                    entity.setImagePath(imagePath);
                     entity.setName(request.getName());
                     entity.setDescription(request.getDescription());
 
@@ -97,4 +103,5 @@ public class CardFolderServiceImpl implements CardFolderService {
     private ImageData buildImageData(Long userId, MultipartFile image) {
         return new ImageData(userId, image, ImagePath.CARDFOLDER_PATH);
     }
+
 }
