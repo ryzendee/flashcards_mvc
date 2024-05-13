@@ -1,8 +1,8 @@
 package com.app.flashcards.utils.path;
 
-import com.app.flashcards.enums.ImagePath;
+import com.app.flashcards.models.ImageData;
 
 public interface ImagePathGenerator {
 
-    String generatePath(String userId, String fileName, ImagePath path);
+    String generatePath(ImageData imageData);
 }
