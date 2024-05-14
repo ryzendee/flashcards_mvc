@@ -3,7 +3,7 @@ package com.app.flashcards.controller;
 import com.app.flashcards.dto.request.FlashcardCreateDtoRequest;
 import com.app.flashcards.dto.request.FlashcardUpdateDtoRequest;
 import com.app.flashcards.dto.response.FlashcardDtoResponse;
-import com.app.flashcards.facade.flashcard.FlashcardFacade;
+import com.app.flashcards.service.flashcard.FlashcardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,17 +18,23 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 public class FlashcardController {
+    private static final String ADD_FLASHCARD_VIEW = "flashcard/flashcard-add-view";
+    private static final String UPDATE_FLASHCARD_VIEW = "flashcard/flashcard-update-view";
+
+    private static final String REDIRECT_TO_FLASHCARDS_FORMATTED = "redirect:/%s/flashcards";
+
     private static final String DEFAULT_PAGE = "0";
     private static final String DEFAULT_SIZE = "10";
 
-    private final FlashcardFacade flashcardFacade;
+
+    private final FlashcardService flashcardService;
 
     @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #folderId)")
     @GetMapping("/{folderId}/flashcards-quiz")
     public String getQuizView(@SessionAttribute Long userId,
                               @PathVariable Long folderId,
                               Model model) {
-        List<FlashcardDtoResponse> flashcards = flashcardFacade.getListByFolderId(folderId);
+        List<FlashcardDtoResponse> flashcards = flashcardService.getListByFolderId(folderId);
 
         model.addAttribute("flashcardsList", flashcards);
 
@@ -43,7 +49,7 @@ public class FlashcardController {
                                     @RequestParam(defaultValue = DEFAULT_SIZE) int size,
                                     Model model) {
 
-        Page<FlashcardDtoResponse> flashcardsPage = flashcardFacade.getPageByFolderId(folderId, page, size);
+        Page<FlashcardDtoResponse> flashcardsPage = flashcardService.getPageByFolderId(folderId, page, size);
 
         model.addAttribute("folderId", folderId);
         model.addAttribute("flashcardsPageList", flashcardsPage);
@@ -61,10 +67,11 @@ public class FlashcardController {
 
         FlashcardCreateDtoRequest createDtoRequest = new FlashcardCreateDtoRequest();
         createDtoRequest.setFolderId(folderId);
+        createDtoRequest.setUserId(userId);
 
         model.addAttribute("flashcard", createDtoRequest);
 
-        return "flashcard/flashcard-add-view";
+        return ADD_FLASHCARD_VIEW;
     }
 
     @PostMapping("/flashcards-add")
@@ -75,12 +82,12 @@ public class FlashcardController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
-            return "flashcard/flashcard-add-view";
+            return ADD_FLASHCARD_VIEW;
         }
 
-        flashcardFacade.createFlashcard(userId, request);
+        flashcardService.createFlashcard(request);
 
-        return String.format("redirect:/%s/flashcards", request.getFolderId());
+        return String.format(REDIRECT_TO_FLASHCARDS_FORMATTED, request.getFolderId());
     }
 
     @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #folderId)")
@@ -93,10 +100,11 @@ public class FlashcardController {
         FlashcardUpdateDtoRequest updateDtoRequest = new FlashcardUpdateDtoRequest();
         updateDtoRequest.setId(flashcardId);
         updateDtoRequest.setFolderId(folderId);
+        updateDtoRequest.setUserId(userId);
 
         model.addAttribute("flashcard", updateDtoRequest);
 
-        return "flashcard/flashcard-update-view";
+        return UPDATE_FLASHCARD_VIEW;
     }
 
     @PostMapping("/flashcards-update")
@@ -107,12 +115,12 @@ public class FlashcardController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
-            return "flashcard/flashcard-add-view";
+            return UPDATE_FLASHCARD_VIEW;
         }
 
-        flashcardFacade.updateFlashcard(userId, request);
+        flashcardService.updateFlashcard(request);
 
-        return String.format("redirect:/%s/flashcards", request.getFolderId());
+        return String.format(REDIRECT_TO_FLASHCARDS_FORMATTED, request.getFolderId());
     }
 
     @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #folderId)")
@@ -121,9 +129,9 @@ public class FlashcardController {
                                   @PathVariable Long folderId,
                                   @RequestParam Long flashcardId) {
 
-        flashcardFacade.deleteById(flashcardId);
+        flashcardService.deleteFlashcardById(flashcardId);
 
-        return String.format("redirect:/%s/flashcards", folderId);
+        return String.format(REDIRECT_TO_FLASHCARDS_FORMATTED, folderId);
     }
 
 }
