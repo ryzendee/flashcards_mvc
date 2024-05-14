@@ -16,7 +16,7 @@ public class FlashcardMapperImpl implements FlashcardMapper {
                 folderId,
                 entity.getName(),
                 entity.getDefinition(),
-                entity.getImageUrl()
+                entity.getImagePath()
         );
     }
 }

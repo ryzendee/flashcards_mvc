@@ -13,6 +13,6 @@ public class CardFolderMapperImpl implements CardFolderMapper {
                 cardFolder.getId(),
                 cardFolder.getName(),
                 cardFolder.getDescription(),
-                cardFolder.getImageUrl());
+                cardFolder.getImagePath());
     }
 }

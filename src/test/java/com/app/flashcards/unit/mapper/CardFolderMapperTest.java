@@ -24,13 +24,13 @@ public class CardFolderMapperTest {
         cardFolder.setId(1L);
         cardFolder.setName("test-name");
         cardFolder.setDescription("test-descr");
-        cardFolder.setImageUrl("test-url");
+        cardFolder.setImagePath("test-url");
 
         CardFolderDtoResponse dtoResponse = cardFolderMapper.toDto(cardFolder);
 
         assertThat(dtoResponse.getId()).isEqualTo(cardFolder.getId());
         assertThat(dtoResponse.getName()).isEqualTo(cardFolder.getName());
         assertThat(dtoResponse.getDescription()).isEqualTo(cardFolder.getDescription());
-        assertThat(dtoResponse.getImageUrl()).isEqualTo(cardFolder.getImageUrl());
+        assertThat(dtoResponse.getImageUrl()).isEqualTo(cardFolder.getImagePath());
     }
 }

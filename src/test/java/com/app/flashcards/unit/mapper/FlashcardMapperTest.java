@@ -30,7 +30,7 @@ public class FlashcardMapperTest {
         entity.setId(1L);
         entity.setName("test-name");
         entity.setDefinition("test-def");
-        entity.setImageUrl("test-url");
+        entity.setImagePath("test-path");
 
         FlashcardDtoResponse dtoResponse = flashcardMapper.toDto(entity);
 
@@ -38,6 +38,6 @@ public class FlashcardMapperTest {
         assertThat(dtoResponse.getId()).isEqualTo(entity.getId());
         assertThat(dtoResponse.getName()).isEqualTo(entity.getName());
         assertThat(dtoResponse.getDefinition()).isEqualTo(entity.getDefinition());
-        assertThat(dtoResponse.getImageUrl()).isEqualTo(entity.getImageUrl());
+        assertThat(dtoResponse.getImageUrl()).isEqualTo(entity.getImagePath());
     }
 }
