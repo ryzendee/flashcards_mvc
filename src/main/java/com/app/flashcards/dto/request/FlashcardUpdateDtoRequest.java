@@ -15,6 +15,7 @@ public class FlashcardUpdateDtoRequest {
 
     private Long id;
     private Long folderId;
+    private Long userId;
     @NotBlank(message = "Folder name must not be blank or empty.")
     private String name;
     private String definition;

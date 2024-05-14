@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class FlashcardCreateDtoRequest {
 
+    private Long userId;
     private Long folderId;
     @NotBlank(message = "Folder name must not be blank or empty.")
     private String name;
