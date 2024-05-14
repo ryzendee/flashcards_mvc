@@ -90,7 +90,7 @@ public class CardFolderController {
             return "cardfolder/cardfolder-update-view";
         }
 
-        cardFolderService.updateCardFolder(userId, request);
+        cardFolderService.updateCardFolder(request);
 
         return REDIRECT_TO_FOLDERS;
     }
