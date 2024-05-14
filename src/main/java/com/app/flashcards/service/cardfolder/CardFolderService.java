@@ -6,7 +6,7 @@ import com.app.flashcards.dto.response.CardFolderDtoResponse;
 import org.springframework.data.domain.Page;
 
 public interface CardFolderService {
-    void createCardFolder(Long userId, CardFolderCreateDtoRequest createRequest);
+    void createCardFolder(CardFolderCreateDtoRequest createRequest);
 
     Page<CardFolderDtoResponse> getCardFolderPageByUserId(Long userId, int page, int size);
     void deleteById(Long folderId);

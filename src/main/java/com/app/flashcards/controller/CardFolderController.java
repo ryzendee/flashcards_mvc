@@ -40,8 +40,10 @@ public class CardFolderController {
     }
 
     @GetMapping("/folders-add")
-    public String getAddFolderView(Model model) {
+    public String getAddFolderView(@SessionAttribute Long userId,
+                                   Model model) {
         CardFolderCreateDtoRequest folderDtoRequest = new CardFolderCreateDtoRequest();
+        folderDtoRequest.setUserId(userId);
 
         model.addAttribute("cardFolder", folderDtoRequest);
 
@@ -51,7 +53,6 @@ public class CardFolderController {
     @PostMapping("/folders-add")
     public String saveCreatedFolder(@Valid @ModelAttribute("cardFolder") CardFolderCreateDtoRequest cardFolderCreateDtoRequest,
                                     BindingResult bindingResult,
-                                    @SessionAttribute Long userId,
                                     Model model) {
 
         if (bindingResult.hasErrors()) {
@@ -59,7 +60,7 @@ public class CardFolderController {
             return "cardfolder/cardfolder-add-view";
         }
 
-        cardFolderService.createCardFolder(userId, cardFolderCreateDtoRequest);
+        cardFolderService.createCardFolder(cardFolderCreateDtoRequest);
 
         return REDIRECT_TO_FOLDERS;
     }
@@ -72,17 +73,17 @@ public class CardFolderController {
 
         CardFolderUpdateDtoRequest cardFolderUpdateDtoRequest = new CardFolderUpdateDtoRequest();
         cardFolderUpdateDtoRequest.setId(folderId);
+        cardFolderUpdateDtoRequest.setUserId(userId);
         model.addAttribute("cardFolder", cardFolderUpdateDtoRequest);
 
         return "cardfolder/cardfolder-update-view";
     }
 
 
-    @PreAuthorize("@customSecurityExpression.isFolderOwner(#userId, #request.id)")
+    @PreAuthorize("@customSecurityExpression.isFolderOwner(#request.userId, #request.id)")
     @PostMapping("/folders-update")
     public String updateFolder(@Valid @ModelAttribute("cardFolder") CardFolderUpdateDtoRequest request,
                                BindingResult bindingResult,
-                               @SessionAttribute Long userId,
                                Model model) {
 
         if (bindingResult.hasErrors()) {

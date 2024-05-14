@@ -34,10 +34,10 @@ public class CardFolderServiceImpl implements CardFolderService {
 
     @Transactional
     @Override
-    public void createCardFolder(Long userId, CardFolderCreateDtoRequest createRequest) {
-        userRepository.findById(userId)
+    public void createCardFolder(CardFolderCreateDtoRequest createRequest) {
+        userRepository.findById(createRequest.getUserId())
                 .ifPresentOrElse(user -> {
-                    ImageData imageData = buildImageData(userId, createRequest.getImage());
+                    ImageData imageData = buildImageData(createRequest.getUserId(), createRequest.getImage());
                     String imagePath = imageCloudStorageClient.uploadImage(imageData);
 
                     CardFolder cardFolder = cardFolderFactory.createFromRequest(createRequest);
@@ -47,7 +47,7 @@ public class CardFolderServiceImpl implements CardFolderService {
                     cardFolderRepository.save(cardFolder);
                     log.info("Card Folder was saved: {}", cardFolder);
                 }, () -> {
-                    throw new UserNotFoundException("Cannot create cardFolder, because user not found! User id: " + userId);
+                    throw new UserNotFoundException("Cannot create cardFolder, because user not found! User id: " + createRequest.getUserId());
                 });
     }
 
@@ -82,7 +82,7 @@ public class CardFolderServiceImpl implements CardFolderService {
     public void updateCardFolder(CardFolderUpdateDtoRequest request) {
         cardFolderRepository.findById(request.getId())
                 .ifPresent(entity -> {
-                    ImageData imageData = buildImageData(entity.getUser().getId(), request.getImage());
+                    ImageData imageData = buildImageData(request.getUserId(), request.getImage());
                     String imagePath = imageCloudStorageClient.uploadImage(imageData);
 
                     entity.setImagePath(imagePath);

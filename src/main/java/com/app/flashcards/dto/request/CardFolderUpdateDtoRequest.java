@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 public class CardFolderUpdateDtoRequest {
     private Long id;
+    private Long userId;
     @NotBlank(message = "Folder name must not be blank or empty.")
     private String name;
     private String description;
