@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CardFolderController {
 
+    private static final String ADD_FOLDER_VIEW = "cardfolder/cardfolder-add-view";
+    private static final String UPDATE_FOLDER_VIEW = "cardfolder/cardfolder-update-view";
+
     private static final String REDIRECT_TO_FOLDERS = "redirect:/folders";
 
     private static final String DEFAULT_PAGE = "0";
@@ -47,7 +50,7 @@ public class CardFolderController {
 
         model.addAttribute("cardFolder", folderDtoRequest);
 
-        return "cardfolder/cardfolder-add-view";
+        return ADD_FOLDER_VIEW;
     }
 
     @PostMapping("/folders-add")
@@ -57,7 +60,7 @@ public class CardFolderController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
-            return "cardfolder/cardfolder-add-view";
+            return ADD_FOLDER_VIEW;
         }
 
         cardFolderService.createCardFolder(cardFolderCreateDtoRequest);
@@ -76,7 +79,7 @@ public class CardFolderController {
         cardFolderUpdateDtoRequest.setUserId(userId);
         model.addAttribute("cardFolder", cardFolderUpdateDtoRequest);
 
-        return "cardfolder/cardfolder-update-view";
+        return UPDATE_FOLDER_VIEW;
     }
 
 
@@ -88,7 +91,7 @@ public class CardFolderController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
-            return "cardfolder/cardfolder-update-view";
+            return UPDATE_FOLDER_VIEW;
         }
 
         cardFolderService.updateCardFolder(request);
