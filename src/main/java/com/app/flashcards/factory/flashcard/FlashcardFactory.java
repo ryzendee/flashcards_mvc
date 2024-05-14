@@ -6,5 +6,5 @@ import com.app.flashcards.models.FlashcardCreationData;
 
 public interface FlashcardFactory {
 
-    Flashcard createFromRequestAndData(FlashcardCreateDtoRequest createDtoRequest, FlashcardCreationData data);
+    Flashcard createFromDtoRequest(FlashcardCreateDtoRequest createDtoRequest);
 }

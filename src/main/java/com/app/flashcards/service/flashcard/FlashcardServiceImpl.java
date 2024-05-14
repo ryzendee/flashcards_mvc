@@ -77,7 +77,7 @@ public class FlashcardServiceImpl implements FlashcardService {
     public void createFlashcard(FlashcardCreateDtoRequest createDtoRequest) {
         cardFolderRepository.findById(createDtoRequest.getFolderId())
                 .ifPresentOrElse(entity -> {
-                            Flashcard flashcard = flashcardFactory.createFromRequestAndData(createDtoRequest);
+                            Flashcard flashcard = flashcardFactory.createFromDtoRequest(createDtoRequest);
                             flashcard.setCardFolder(entity);
 
                             ImageData imageData = buildImageData(createDtoRequest.getUserId(), createDtoRequest.getImage());

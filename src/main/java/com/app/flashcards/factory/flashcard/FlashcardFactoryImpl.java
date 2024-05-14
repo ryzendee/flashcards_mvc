@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class FlashcardFactoryImpl implements FlashcardFactory {
 
     @Override
-    public Flashcard createFromRequestAndData(FlashcardCreateDtoRequest createDtoRequest, FlashcardCreationData data) {
-        return new Flashcard(createDtoRequest.getName(), createDtoRequest.getDefinition(), data.imageUrl(), data.cardFolder());
+    public Flashcard createFromDtoRequest(FlashcardCreateDtoRequest createDtoRequest) {
+        return new Flashcard(createDtoRequest.getName(), createDtoRequest.getDefinition());
     }
 }
