@@ -23,17 +23,22 @@
         private String definition;
 
         @Column(columnDefinition = "TEXT")
-        private String imageUrl;
+        private String imagePath;
 
         @ManyToOne
         @JoinColumn(name = "folder_id")
         @ToString.Exclude
         private CardFolder cardFolder;
 
-        public Flashcard(String name, String definition, String imageUrl, CardFolder cardFolder) {
+        public Flashcard(String name, String definition) {
             this.name = name;
             this.definition = definition;
-            this.imageUrl = imageUrl;
+        }
+
+        public Flashcard(String name, String definition, String imagePath, CardFolder cardFolder) {
+            this.name = name;
+            this.definition = definition;
+            this.imagePath = imagePath;
             this.cardFolder = cardFolder;
         }
     }
