@@ -1,5 +1,7 @@
 package com.app.flashcards.config;
 
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
@@ -27,11 +29,28 @@ public class MinioConfig {
         this.accessKey = accessKey;
     }
     @Bean
-    public MinioClient minioClient() {
-        return MinioClient.builder()
+    public MinioClient minioClient() throws Exception {
+        //initialization
+        MinioClient minioClient = MinioClient.builder()
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
-    }
 
+        //creating buckets
+        boolean bucketExists = minioClient.bucketExists(
+                BucketExistsArgs.builder()
+                        .bucket(bucketName)
+                        .build()
+        );
+
+        if (!bucketExists) {
+            minioClient.makeBucket(
+                    MakeBucketArgs.builder()
+                            .bucket(bucketName)
+                            .build()
+            );
+        }
+
+        return minioClient;
+    }
 }
