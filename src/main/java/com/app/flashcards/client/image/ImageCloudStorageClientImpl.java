@@ -3,10 +3,8 @@ package com.app.flashcards.service.image;
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.models.ImageData;
 import com.app.flashcards.utils.path.ImagePathGenerator;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
+import io.micrometer.common.util.StringUtils;
+import io.minio.*;
 import io.minio.errors.*;
 import io.minio.http.Method;
 import jakarta.validation.constraints.NotBlank;
@@ -42,7 +40,7 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
     public String uploadImage(ImageData imageData) {
         MultipartFile image = imageData.image();
 
-        if (image.isEmpty()) {
+        if (image == null || image.isEmpty()) {
             return DEFAULT_PATH;
         }
 
@@ -70,18 +68,21 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
 
     @Override
     public String generateUrlToImage(String path) {
-        try {
-            if (path.equals(DEFAULT_PATH)) {
-                return path;
-            }
+        if (!isImageExists(path) || path.equals(DEFAULT_PATH)) {
+            return DEFAULT_PATH;
+        }
 
-            return minioClient.getPresignedObjectUrl(
+        try {
+            String imageUrl = minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.GET)
                             .bucket(bucketName)
                             .object(path)
                             .expiry(IMAGE_EXPIRATION_TIME, TimeUnit.HOURS)
                             .build());
+
+            log.info("Generate URL to image: {}", imageUrl);
+            return imageUrl;
         } catch (ServerException | InsufficientDataException | ErrorResponseException |
                  IOException | NoSuchAlgorithmException | InvalidKeyException |
                  InvalidResponseException | XmlParserException | InternalException ex) {
@@ -92,20 +93,42 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
 
     @Override
     public boolean deleteImage(String path) {
-        try {
-            if (path.equals(DEFAULT_PATH)) {
-                return false;
-            }
+        if (!isImageExists(path) || path.equals(DEFAULT_PATH)) {
+            return false;
+        }
 
+        try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucketName)
                             .object(path)
                             .build()
             );
+            log.info("Image was deleted: {}", path);
             return true;
         } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException ex) {
             log.error("Image delete exception", ex);
+            return false;
+        }
+    }
+
+    private boolean isImageExists(String imagePath) {
+        if (StringUtils.isBlank(imagePath)) {
+            return false;
+        }
+
+        try {
+            minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(imagePath)
+                            .build()
+            );
+
+            return true;
+        } catch (ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
+                 InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
+                 XmlParserException ex) {
             return false;
         }
     }
