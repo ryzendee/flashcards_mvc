@@ -1,4 +1,4 @@
-package com.app.flashcards.service.image;
+package com.app.flashcards.client.image;
 
 import com.app.flashcards.models.ImageData;
 

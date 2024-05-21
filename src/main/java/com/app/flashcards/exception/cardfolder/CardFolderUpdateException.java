@@ -1,4 +1,4 @@
-package com.app.flashcards.exception.custom;
+package com.app.flashcards.exception.cardfolder;
 
 public class CardFolderUpdateException extends RuntimeException {
 

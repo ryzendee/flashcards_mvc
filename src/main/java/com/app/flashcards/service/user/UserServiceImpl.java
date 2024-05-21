@@ -2,8 +2,8 @@ package com.app.flashcards.service.user;
 
 import com.app.flashcards.dto.request.SignUpDtoRequest;
 import com.app.flashcards.entity.User;
-import com.app.flashcards.exception.custom.SignUpException;
-import com.app.flashcards.exception.custom.UserNotFoundException;
+import com.app.flashcards.exception.user.SignUpException;
+import com.app.flashcards.exception.user.UserNotFoundException;
 import com.app.flashcards.factory.user.UserFactory;
 import com.app.flashcards.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

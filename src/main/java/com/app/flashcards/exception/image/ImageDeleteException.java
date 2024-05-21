@@ -1,4 +1,4 @@
-package com.app.flashcards.exception.custom;
+package com.app.flashcards.exception.image;
 
 public class ImageDeleteException extends RuntimeException {
 
