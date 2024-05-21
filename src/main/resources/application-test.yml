@@ -1,0 +1,23 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    org:
+      hibernate:
+        SQL: DEBUG
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      enabled: true
+  web:
+    resources:
+      add-mappings: true
+      static-locations: classpath:/static/
+
+minio:
+  bucket-name: image-bucket
+
+
+
