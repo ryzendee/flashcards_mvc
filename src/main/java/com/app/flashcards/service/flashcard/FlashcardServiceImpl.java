@@ -6,15 +6,18 @@ import com.app.flashcards.dto.response.FlashcardDtoResponse;
 import com.app.flashcards.entity.Flashcard;
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.exception.custom.CardFolderNotFoundException;
+import com.app.flashcards.exception.custom.FlashcardCreateException;
 import com.app.flashcards.exception.custom.FlashcardNotFoundException;
+import com.app.flashcards.exception.custom.FlashcardUpdateException;
 import com.app.flashcards.factory.flashcard.FlashcardFactory;
 import com.app.flashcards.mapper.flashcard.FlashcardMapper;
 import com.app.flashcards.models.ImageData;
 import com.app.flashcards.repository.CardFolderRepository;
 import com.app.flashcards.repository.FlashcardRepository;
-import com.app.flashcards.service.image.ImageCloudStorageClient;
+import com.app.flashcards.client.image.ImageCloudStorageClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,12 +42,7 @@ public class FlashcardServiceImpl implements FlashcardService {
     @Override
     public List<FlashcardDtoResponse> getListByFolderId(Long folderId) {
         return flashcardRepository.findAllByCardFolderId(folderId).stream()
-                .map(entity -> {
-                    String imageUrl = imageCloudStorageClient.generateUrlToImage(entity.getImagePath());
-                    FlashcardDtoResponse dtoResponse = flashcardMapper.toDto(entity);
-                    dtoResponse.setImageUrl(imageUrl);
-                    return dtoResponse;
-                }).toList();
+                .map(this::generateImageUrlAndMapToResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -53,12 +51,14 @@ public class FlashcardServiceImpl implements FlashcardService {
         Pageable pageable = PageRequest.of(page, size);
 
         return flashcardRepository.findAllByCardFolderId(folderId, pageable)
-                .map(entity -> {
-                    String imageUrl = imageCloudStorageClient.generateUrlToImage(entity.getImagePath());
-                    FlashcardDtoResponse dtoResponse = flashcardMapper.toDto(entity);
-                    dtoResponse.setImageUrl(imageUrl);
-                    return dtoResponse;
-                });
+                .map(this::generateImageUrlAndMapToResponse);
+    }
+
+    private FlashcardDtoResponse generateImageUrlAndMapToResponse(Flashcard entity) {
+        String imageUrl = imageCloudStorageClient.generateUrlToImage(entity.getImagePath());
+        FlashcardDtoResponse dtoResponse = flashcardMapper.toDto(entity);
+        dtoResponse.setImageUrl(imageUrl);
+        return dtoResponse;
     }
 
     @Transactional
@@ -80,11 +80,15 @@ public class FlashcardServiceImpl implements FlashcardService {
                             Flashcard flashcard = flashcardFactory.createFromDtoRequest(createDtoRequest);
                             flashcard.setCardFolder(entity);
 
-                            ImageData imageData = buildImageData(createDtoRequest.getUserId(), createDtoRequest.getImage());
-                            String imagePath = imageCloudStorageClient.uploadImage(imageData);
+                            String imagePath = uploadImage(createDtoRequest.getUserId(), createDtoRequest.getImage());
                             flashcard.setImagePath(imagePath);
 
-                            flashcardRepository.save(flashcard);
+                            try {
+                                flashcardRepository.save(flashcard);
+                            } catch (DataIntegrityViolationException ex) {
+                                log.error("Failed to create flashcard", ex);
+                                throw new FlashcardCreateException("Cannot update flashcard! Name, definition and card folder must not be null.");
+                            }
                             log.info("Flashcard was saved: {}", flashcard);
                         }, () -> {
                             throw new CardFolderNotFoundException("Cannot create flashcard because card folder not found! CardFolder Id: " + createDtoRequest.getFolderId());
@@ -99,18 +103,26 @@ public class FlashcardServiceImpl implements FlashcardService {
                     entity.setName(updateDtoRequest.getName());
                     entity.setDefinition(updateDtoRequest.getDefinition());
 
-                    ImageData imageData = buildImageData(updateDtoRequest.getUserId(), updateDtoRequest.getImage());
-                    String imagePath = imageCloudStorageClient.uploadImage(imageData);
-                    entity.setImagePath(imagePath);
+                    if (!(updateDtoRequest.getImage() == null || updateDtoRequest.getImage().isEmpty())) {
+                        String imagePath = uploadImage(updateDtoRequest.getUserId(), updateDtoRequest.getImage());
+                        entity.setImagePath(imagePath);
+                    }
 
-                    flashcardRepository.save(entity);
+                    try {
+                        flashcardRepository.save(entity);
+                    } catch (DataIntegrityViolationException ex) {
+                        log.error("Failed to update flashcard");
+                        throw new FlashcardUpdateException("Cannot update flashcard! Name, definition and card folder must not be null.");
+                    }
+
                     log.info("Flashcard was updated: {}", entity);
                 }, () -> {
                     throw new FlashcardNotFoundException("Flashcard not found! Id: " + updateDtoRequest.getId());
                 });
     }
 
-    private ImageData buildImageData(Long userId, MultipartFile image) {
-        return new ImageData(userId, image, ImagePath.FLASHCARDS_PATH);
+    private String uploadImage(Long userId, MultipartFile image) {
+        ImageData imageData = new ImageData(userId, image, ImagePath.FLASHCARDS_PATH);
+        return imageCloudStorageClient.uploadImage(imageData);
     }
 }
