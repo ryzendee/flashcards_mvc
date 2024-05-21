@@ -5,15 +5,17 @@ import com.app.flashcards.dto.request.CardFolderUpdateDtoRequest;
 import com.app.flashcards.dto.response.CardFolderDtoResponse;
 import com.app.flashcards.entity.CardFolder;
 import com.app.flashcards.enums.ImagePath;
+import com.app.flashcards.exception.custom.CardFolderCreateException;
 import com.app.flashcards.exception.custom.UserNotFoundException;
 import com.app.flashcards.factory.cardfolder.CardFolderFactory;
 import com.app.flashcards.mapper.cardfolder.CardFolderMapper;
 import com.app.flashcards.models.ImageData;
 import com.app.flashcards.repository.CardFolderRepository;
 import com.app.flashcards.repository.UserRepository;
-import com.app.flashcards.service.image.ImageCloudStorageClient;
+import com.app.flashcards.client.image.ImageCloudStorageClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,8 +46,14 @@ public class CardFolderServiceImpl implements CardFolderService {
                     cardFolder.setUser(user);
                     cardFolder.setImagePath(imagePath);
 
-                    cardFolderRepository.save(cardFolder);
+                    try {
+                        cardFolderRepository.save(cardFolder);
+                    } catch (DataIntegrityViolationException ex) {
+                        log.error("Failed to create card folder", ex);
+                        throw new CardFolderCreateException("Cannot create card folder! User and card folder name must not be null.");
+                    }
                     log.info("Card Folder was saved: {}", cardFolder);
+
                 }, () -> {
                     throw new UserNotFoundException("Cannot create cardFolder, because user not found! User id: " + createRequest.getUserId());
                 });
@@ -84,12 +92,20 @@ public class CardFolderServiceImpl implements CardFolderService {
                 .ifPresent(entity -> {
                     ImageData imageData = buildImageData(request.getUserId(), request.getImage());
                     String imagePath = imageCloudStorageClient.uploadImage(imageData);
+                    if (!(request.getImage() == null || request.getImage().isEmpty())) {
+                        entity.setImagePath(imagePath);
+                    }
 
-                    entity.setImagePath(imagePath);
                     entity.setName(request.getName());
                     entity.setDescription(request.getDescription());
 
-                    cardFolderRepository.save(entity);
+                    try {
+                        cardFolderRepository.save(entity);
+                    } catch (DataIntegrityViolationException ex) {
+                        log.error("Failed to update card folder", ex);
+                        throw new CardFolderCreateException("Cannot update card folder! User and card folder name must not be null.");
+                    }
+
                     log.info("Card folder was updated: {}", entity);
                 });
     }
