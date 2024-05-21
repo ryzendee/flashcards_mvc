@@ -34,14 +34,46 @@ public class CardFolderServiceImpl implements CardFolderService {
     private final CardFolderMapper cardFolderMapper;
     private final ImageCloudStorageClient imageCloudStorageClient;
 
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<CardFolderDtoResponse> getCardFolderPageByUserId(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        return cardFolderRepository.findAllByUserId(userId, pageable)
+                .map(this::generateImageUrlAndMapToResponse);
+    }
+
+    private CardFolderDtoResponse generateImageUrlAndMapToResponse(CardFolder entity) {
+        CardFolderDtoResponse cardFolderDtoResponse = cardFolderMapper.toDto(entity);
+        String imageUrl = imageCloudStorageClient.generateUrlToImage(entity.getImagePath());
+        cardFolderDtoResponse.setImageUrl(imageUrl);
+        return cardFolderDtoResponse;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public boolean existsByIdAndUserId(Long folderId, Long userId) {
+        return cardFolderRepository.existsByIdAndUserId(folderId, userId);
+    }
+
+    @Transactional
+    @Override
+    public void deleteById(Long folderId) {
+        cardFolderRepository.findById(folderId)
+                .ifPresent(entity -> {
+                    cardFolderRepository.delete(entity);
+                    imageCloudStorageClient.deleteImage(entity.getImagePath());
+                    log.info("Deleted card folder: {}", entity);
+                });
+    }
+
     @Transactional
     @Override
     public void createCardFolder(CardFolderCreateDtoRequest createRequest) {
         userRepository.findById(createRequest.getUserId())
                 .ifPresentOrElse(user -> {
-                    ImageData imageData = buildImageData(createRequest.getUserId(), createRequest.getImage());
-                    String imagePath = imageCloudStorageClient.uploadImage(imageData);
-
+                    String imagePath = uploadImage(createRequest.getUserId(), createRequest.getImage());
                     CardFolder cardFolder = cardFolderFactory.createFromRequest(createRequest);
                     cardFolder.setUser(user);
                     cardFolder.setImagePath(imagePath);
@@ -59,45 +91,18 @@ public class CardFolderServiceImpl implements CardFolderService {
                 });
     }
 
-
-    @Transactional(readOnly = true)
-    @Override
-    public Page<CardFolderDtoResponse> getCardFolderPageByUserId(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-
-        return cardFolderRepository.findAllByUserId(userId, pageable)
-                .map(entity -> {
-                    CardFolderDtoResponse cardFolderDtoResponse = cardFolderMapper.toDto(entity);
-                    String imageUrl = imageCloudStorageClient.generateUrlToImage(entity.getImagePath());
-                    cardFolderDtoResponse.setImageUrl(imageUrl);
-                    return cardFolderDtoResponse;
-                });
-    }
-
-    @Transactional
-    @Override
-    public void deleteById(Long folderId) {
-        cardFolderRepository.findById(folderId)
-                .ifPresent(entity -> {
-                    cardFolderRepository.delete(entity);
-                    imageCloudStorageClient.deleteImage(entity.getImagePath());
-                    log.info("Deleted card folder: {}", entity);
-                });
-    }
-
     @Transactional
     @Override
     public void updateCardFolder(CardFolderUpdateDtoRequest request) {
         cardFolderRepository.findById(request.getId())
                 .ifPresent(entity -> {
-                    ImageData imageData = buildImageData(request.getUserId(), request.getImage());
-                    String imagePath = imageCloudStorageClient.uploadImage(imageData);
-                    if (!(request.getImage() == null || request.getImage().isEmpty())) {
-                        entity.setImagePath(imagePath);
-                    }
-
                     entity.setName(request.getName());
                     entity.setDescription(request.getDescription());
+
+                    if (!(request.getImage() == null || request.getImage().isEmpty())) {
+                        String imagePath = uploadImage(request.getUserId(), request.getImage());
+                        entity.setImagePath(imagePath);
+                    }
 
                     try {
                         cardFolderRepository.save(entity);
@@ -110,14 +115,9 @@ public class CardFolderServiceImpl implements CardFolderService {
                 });
     }
 
-    @Transactional(readOnly = true)
-    @Override
-    public boolean existsByIdAndUserId(Long folderId, Long userId) {
-        return cardFolderRepository.existsByIdAndUserId(folderId, userId);
-    }
-
-    private ImageData buildImageData(Long userId, MultipartFile image) {
-        return new ImageData(userId, image, ImagePath.CARDFOLDER_PATH);
+    private String uploadImage(Long userId, MultipartFile image) {
+        ImageData imageData = new ImageData(userId, image, ImagePath.CARDFOLDER_PATH);
+        return imageCloudStorageClient.uploadImage(imageData);
     }
 
 }
