@@ -1,6 +1,7 @@
 package com.app.flashcards.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,18 +14,24 @@ import java.util.List;
 @Entity
 @Table(
         name = "users",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"username"})}
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"username"}, name = "u_username_un")}
 )
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull(message = "Username must not be null")
     private String username;
+    @NotNull(message = "Password must not be null")
     private String password;
+
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<CardFolder> cardFolderList = new ArrayList<>();
 

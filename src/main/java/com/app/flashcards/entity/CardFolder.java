@@ -1,6 +1,7 @@
 package com.app.flashcards.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class CardFolder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "Name must not be null")
     private String name;
 
     private String description;
@@ -27,11 +29,12 @@ public class CardFolder {
     @Column(columnDefinition = "TEXT")
     private String imagePath;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "user_id")
+    @NotNull(message = "User id must not be null")
     private User user;
 
-    @OneToMany(mappedBy = "cardFolder", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cardFolder")
     @ToString.Exclude
     private List<Flashcard> flashcardList = new ArrayList<>();
 

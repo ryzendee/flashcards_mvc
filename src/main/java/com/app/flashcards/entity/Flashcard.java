@@ -1,6 +1,7 @@
     package com.app.flashcards.entity;
 
     import jakarta.persistence.*;
+    import jakarta.validation.constraints.NotNull;
     import lombok.Getter;
     import lombok.NoArgsConstructor;
     import lombok.Setter;
@@ -19,15 +20,18 @@
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
+        @NotNull(message = "Name must not be null")
         private String name;
+        @NotNull(message = "Definition must not be null")
         private String definition;
 
         @Column(columnDefinition = "TEXT")
         private String imagePath;
 
         @ManyToOne
-        @JoinColumn(name = "folder_id")
+        @JoinColumn(name = "card_folder_id")
         @ToString.Exclude
+        @NotNull(message = "CardFolder must not be null")
         private CardFolder cardFolder;
 
         public Flashcard(String name, String definition) {
