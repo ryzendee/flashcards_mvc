@@ -6,6 +6,7 @@ import com.app.flashcards.exception.user.SignUpException;
 import com.app.flashcards.exception.user.UserNotFoundException;
 import com.app.flashcards.factory.user.UserFactory;
 import com.app.flashcards.repository.UserRepository;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
             log.info("User was saved: {}", user);
 
             return user;
-        } catch (DataIntegrityViolationException ex) {
+        } catch (DataIntegrityViolationException | ConstraintViolationException ex) {
             log.error("Failed to save user", ex);
             throw new SignUpException("User with this username already exists.");
         }
