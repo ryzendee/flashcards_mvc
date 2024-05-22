@@ -8,6 +8,7 @@ import com.app.flashcards.entity.CardFolder;
 import com.app.flashcards.entity.User;
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.exception.cardfolder.CardFolderCreateException;
+import com.app.flashcards.exception.cardfolder.CardFolderNotFoundException;
 import com.app.flashcards.exception.cardfolder.CardFolderUpdateException;
 import com.app.flashcards.exception.user.UserNotFoundException;
 import com.app.flashcards.factory.cardfolder.CardFolderFactory;
@@ -70,7 +71,12 @@ public class CardFolderServiceImpl implements CardFolderService {
                 });
     }
 
-
+    @Transactional
+    @Override
+    public CardFolder getById(Long cardFolderId) {
+        return cardFolderRepository.findById(cardFolderId)
+                .orElseThrow(() -> new CardFolderNotFoundException("Card folder not found! Id: " + cardFolderId));
+    }
 
     @Transactional
     @Override
