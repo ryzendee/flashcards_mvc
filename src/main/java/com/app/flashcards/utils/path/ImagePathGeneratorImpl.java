@@ -1,7 +1,6 @@
 package com.app.flashcards.utils.path;
 
-import com.app.flashcards.enums.ImagePath;
-import com.app.flashcards.models.ImageData;
+import com.app.flashcards.models.ImageDataVo;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -11,10 +10,10 @@ public class ImagePathGeneratorImpl implements ImagePathGenerator {
     private static final String PATH_TEMPLATE = "user-%s/%s/%s";
 
     @Override
-    public String generatePath(ImageData imageData) {
-        String path = imageData.imagePath().getPathToImage();
-        String imageFileName = imageData.image().getOriginalFilename();
+    public String generatePath(ImageDataVo imageDataVo) {
+        String path = imageDataVo.imagePath().getPathToImage();
+        String imageFileName = imageDataVo.image().getOriginalFilename();
 
-        return PATH_TEMPLATE.formatted(String.valueOf(imageData.userId()), path, imageFileName);
+        return PATH_TEMPLATE.formatted(String.valueOf(imageDataVo.userId()), path, imageFileName);
     }
 }

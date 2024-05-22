@@ -1,7 +1,7 @@
 package com.app.flashcards.unit.utils;
 
 import com.app.flashcards.enums.ImagePath;
-import com.app.flashcards.models.ImageData;
+import com.app.flashcards.models.ImageDataVo;
 import com.app.flashcards.utils.path.ImagePathGenerator;
 import com.app.flashcards.utils.path.ImagePathGeneratorImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,11 +27,11 @@ class ImagePathGeneratorTest {
         String expectedPath = "user-1/flashcards/test.png";
 
         MultipartFile image = Mockito.mock(MultipartFile.class);
-        ImageData imageData = new ImageData(1L, image, ImagePath.FLASHCARDS_PATH);
+        ImageDataVo imageDataVo = new ImageDataVo(1L, image, ImagePath.FLASHCARDS_PATH);
         when(image.getOriginalFilename())
                 .thenReturn("test.png");
 
-        String actualPath = imagePathGenerator.generatePath(imageData);
+        String actualPath = imagePathGenerator.generatePath(imageDataVo);
         assertThat(actualPath).isEqualTo(expectedPath);
 
         verify(image).getOriginalFilename();

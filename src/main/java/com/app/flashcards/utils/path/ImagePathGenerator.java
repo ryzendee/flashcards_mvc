@@ -1,8 +1,8 @@
 package com.app.flashcards.utils.path;
 
-import com.app.flashcards.models.ImageData;
+import com.app.flashcards.models.ImageDataVo;
 
 public interface ImagePathGenerator {
 
-    String generatePath(ImageData imageData);
+    String generatePath(ImageDataVo imageDataVo);
 }

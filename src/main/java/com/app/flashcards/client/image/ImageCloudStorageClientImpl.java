@@ -1,7 +1,7 @@
 package com.app.flashcards.client.image;
 
 import com.app.flashcards.enums.ImagePath;
-import com.app.flashcards.models.ImageData;
+import com.app.flashcards.models.ImageDataVo;
 import com.app.flashcards.utils.path.ImagePathGenerator;
 import io.micrometer.common.util.StringUtils;
 import io.minio.*;
@@ -37,15 +37,15 @@ public class ImageCloudStorageClientImpl implements ImageCloudStorageClient {
     }
 
     @Override
-    public String uploadImage(ImageData imageData) {
-        MultipartFile image = imageData.image();
+    public String uploadImage(ImageDataVo imageDataVo) {
+        MultipartFile image = imageDataVo.image();
 
         if (image == null || image.isEmpty()) {
             return DEFAULT_PATH;
         }
 
         try {
-            String generatedPath = imagePathGenerator.generatePath(imageData);
+            String generatedPath = imagePathGenerator.generatePath(imageDataVo);
 
             minioClient.putObject(
                     PutObjectArgs

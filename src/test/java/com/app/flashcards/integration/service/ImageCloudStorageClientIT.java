@@ -2,7 +2,7 @@ package com.app.flashcards.integration.service;
 
 import com.app.flashcards.integration.ITBase;
 import com.app.flashcards.enums.ImagePath;
-import com.app.flashcards.models.ImageData;
+import com.app.flashcards.models.ImageDataVo;
 import com.app.flashcards.client.image.ImageCloudStorageClient;
 import com.app.flashcards.utils.path.ImagePathGenerator;
 import io.minio.*;
@@ -62,10 +62,10 @@ class ImageCloudStorageClientIT extends ITBase {
     @Test
     void uploadImage_imageDataContainsImage_shouldUploadAndReturnImagePath() {
         //given
-        ImageData imageData = getImageDataWithImage();
+        ImageDataVo imageDataVo = getImageDataWithImage();
 
         //when
-        String path = imageCloudStorageClient.uploadImage(imageData);
+        String path = imageCloudStorageClient.uploadImage(imageDataVo);
 
         //then
         boolean isImageExists;
@@ -91,10 +91,10 @@ class ImageCloudStorageClientIT extends ITBase {
     void uploadImage_imageInImageDataIsEmpty_shouldReturnDefaultImagePath() {
         //given
         MockMultipartFile emptyImage = new MockMultipartFile("test", (byte[]) null);
-        ImageData imageData = new ImageData(USER_ID, emptyImage, FLASHCARD_IMAGE_PATH);
+        ImageDataVo imageDataVo = new ImageDataVo(USER_ID, emptyImage, FLASHCARD_IMAGE_PATH);
 
         //when
-        String path = imageCloudStorageClient.uploadImage(imageData);
+        String path = imageCloudStorageClient.uploadImage(imageDataVo);
 
         //then
         assertThat(path).isEqualTo(DEFAULT_IMAGE_PATH.getPathToImage());
@@ -112,10 +112,10 @@ class ImageCloudStorageClientIT extends ITBase {
     @Test
     void uploadImage_imageInImageDataIsNull_shouldReturnDefaultImagePath() {
         //given
-        ImageData imageData = new ImageData(USER_ID, null, FLASHCARD_IMAGE_PATH);
+        ImageDataVo imageDataVo = new ImageDataVo(USER_ID, null, FLASHCARD_IMAGE_PATH);
 
         //when
-        String path = imageCloudStorageClient.uploadImage(imageData);
+        String path = imageCloudStorageClient.uploadImage(imageDataVo);
 
         //then
         assertThat(path).isEqualTo(DEFAULT_IMAGE_PATH.getPathToImage());
@@ -145,10 +145,10 @@ class ImageCloudStorageClientIT extends ITBase {
     @Test
     void generateUrlToImage_existsImageAndValidPath_shouldReturnUrlToImage() {
         //given
-        ImageData imageData = getImageDataWithImage();
-        String imagePath = imagePathGenerator.generatePath(imageData);
+        ImageDataVo imageDataVo = getImageDataWithImage();
+        String imagePath = imagePathGenerator.generatePath(imageDataVo);
 
-        MultipartFile image = imageData.image();
+        MultipartFile image = imageDataVo.image();
         try {
             minioClient.putObject(
                     PutObjectArgs
@@ -185,10 +185,10 @@ class ImageCloudStorageClientIT extends ITBase {
     @Test
     void deleteImage_existsImage_shouldDeleteAndReturnTrue() {
         //given
-        ImageData imageData = getImageDataWithImage();
-        String imagePath = imagePathGenerator.generatePath(imageData);
+        ImageDataVo imageDataVo = getImageDataWithImage();
+        String imagePath = imagePathGenerator.generatePath(imageDataVo);
 
-        MultipartFile image = imageData.image();
+        MultipartFile image = imageDataVo.image();
         try {
             minioClient.putObject(
                     PutObjectArgs
@@ -222,13 +222,13 @@ class ImageCloudStorageClientIT extends ITBase {
         assertThat(result).isFalse();
     }
 
-    private ImageData getImageDataWithImage() {
+    private ImageDataVo getImageDataWithImage() {
         MockMultipartFile image = new MockMultipartFile(
                 "file",
                 "test.jpg",
                 "image/jpg",
                 "test".getBytes()
         );
-        return new ImageData(USER_ID, image, FLASHCARD_IMAGE_PATH);
+        return new ImageDataVo(USER_ID, image, FLASHCARD_IMAGE_PATH);
     }
 }

@@ -13,7 +13,7 @@ import com.app.flashcards.exception.cardfolder.CardFolderUpdateException;
 import com.app.flashcards.exception.user.UserNotFoundException;
 import com.app.flashcards.factory.cardfolder.CardFolderFactory;
 import com.app.flashcards.mapper.cardfolder.CardFolderMapper;
-import com.app.flashcards.models.ImageData;
+import com.app.flashcards.models.ImageDataVo;
 import com.app.flashcards.repository.CardFolderRepository;
 import com.app.flashcards.service.user.UserService;
 import jakarta.validation.ConstraintViolationException;
@@ -129,7 +129,7 @@ public class CardFolderServiceImpl implements CardFolderService {
     }
 
     private String uploadImage(Long userId, MultipartFile image) {
-        ImageData imageData = new ImageData(userId, image, ImagePath.CARDFOLDER_PATH);
-        return imageCloudStorageClient.uploadImage(imageData);
+        ImageDataVo imageDataVo = new ImageDataVo(userId, image, ImagePath.CARDFOLDER_PATH);
+        return imageCloudStorageClient.uploadImage(imageDataVo);
     }
 }

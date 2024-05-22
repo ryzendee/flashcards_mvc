@@ -13,7 +13,7 @@ import com.app.flashcards.exception.flashcard.FlashcardNotFoundException;
 import com.app.flashcards.exception.flashcard.FlashcardUpdateException;
 import com.app.flashcards.factory.flashcard.FlashcardFactory;
 import com.app.flashcards.mapper.flashcard.FlashcardMapper;
-import com.app.flashcards.models.ImageData;
+import com.app.flashcards.models.ImageDataVo;
 import com.app.flashcards.repository.FlashcardRepository;
 import com.app.flashcards.service.cardfolder.CardFolderService;
 import jakarta.validation.ConstraintViolationException;
@@ -127,7 +127,7 @@ public class FlashcardServiceImpl implements FlashcardService {
     }
 
     private String uploadImage(Long userId, MultipartFile image) {
-        ImageData imageData = new ImageData(userId, image, ImagePath.FLASHCARDS_PATH);
-        return imageCloudStorageClient.uploadImage(imageData);
+        ImageDataVo imageDataVo = new ImageDataVo(userId, image, ImagePath.FLASHCARDS_PATH);
+        return imageCloudStorageClient.uploadImage(imageDataVo);
     }
 }
