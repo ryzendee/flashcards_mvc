@@ -6,6 +6,7 @@ import com.app.flashcards.dto.response.CardFolderDtoResponse;
 import com.app.flashcards.entity.CardFolder;
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.exception.cardfolder.CardFolderCreateException;
+import com.app.flashcards.exception.cardfolder.CardFolderUpdateException;
 import com.app.flashcards.exception.user.UserNotFoundException;
 import com.app.flashcards.factory.cardfolder.CardFolderFactory;
 import com.app.flashcards.mapper.cardfolder.CardFolderMapper;
@@ -13,6 +14,7 @@ import com.app.flashcards.models.ImageData;
 import com.app.flashcards.repository.CardFolderRepository;
 import com.app.flashcards.repository.UserRepository;
 import com.app.flashcards.client.image.ImageCloudStorageClient;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -80,7 +82,7 @@ public class CardFolderServiceImpl implements CardFolderService {
 
                     try {
                         cardFolderRepository.save(cardFolder);
-                    } catch (DataIntegrityViolationException ex) {
+                    } catch (ConstraintViolationException ex) {
                         log.error("Failed to create card folder", ex);
                         throw new CardFolderCreateException("Cannot create card folder! User and card folder name must not be null.");
                     }
@@ -91,7 +93,7 @@ public class CardFolderServiceImpl implements CardFolderService {
                 });
     }
 
-    @Transactional
+    @Transactional(rollbackFor = CardFolderUpdateException.class)
     @Override
     public void updateCardFolder(CardFolderUpdateDtoRequest request) {
         cardFolderRepository.findById(request.getId())
@@ -105,10 +107,10 @@ public class CardFolderServiceImpl implements CardFolderService {
                     }
 
                     try {
-                        cardFolderRepository.save(entity);
-                    } catch (DataIntegrityViolationException ex) {
+                        cardFolderRepository.saveAndFlush(entity);
+                    } catch (ConstraintViolationException ex) {
                         log.error("Failed to update card folder", ex);
-                        throw new CardFolderCreateException("Cannot update card folder! User and card folder name must not be null.");
+                        throw new CardFolderUpdateException("Cannot update card folder! User and card folder name must not be null.");
                     }
 
                     log.info("Card folder was updated: {}", entity);
