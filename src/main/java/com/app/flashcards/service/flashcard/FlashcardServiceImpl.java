@@ -1,8 +1,10 @@
 package com.app.flashcards.service.flashcard;
 
+import com.app.flashcards.client.image.ImageCloudStorageClient;
 import com.app.flashcards.dto.request.FlashcardCreateDtoRequest;
 import com.app.flashcards.dto.request.FlashcardUpdateDtoRequest;
 import com.app.flashcards.dto.response.FlashcardDtoResponse;
+import com.app.flashcards.entity.CardFolder;
 import com.app.flashcards.entity.Flashcard;
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.exception.cardfolder.CardFolderNotFoundException;
@@ -12,12 +14,11 @@ import com.app.flashcards.exception.flashcard.FlashcardUpdateException;
 import com.app.flashcards.factory.flashcard.FlashcardFactory;
 import com.app.flashcards.mapper.flashcard.FlashcardMapper;
 import com.app.flashcards.models.ImageData;
-import com.app.flashcards.repository.CardFolderRepository;
 import com.app.flashcards.repository.FlashcardRepository;
-import com.app.flashcards.client.image.ImageCloudStorageClient;
+import com.app.flashcards.service.cardfolder.CardFolderService;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,9 +35,9 @@ public class FlashcardServiceImpl implements FlashcardService {
 
     private final FlashcardFactory flashcardFactory;
     private final FlashcardRepository flashcardRepository;
-    private final CardFolderRepository cardFolderRepository;
-    private final ImageCloudStorageClient imageCloudStorageClient;
     private final FlashcardMapper flashcardMapper;
+    private final CardFolderService cardFolderService;
+    private final ImageCloudStorageClient imageCloudStorageClient;
 
     @Transactional(readOnly = true)
     @Override
@@ -74,25 +75,23 @@ public class FlashcardServiceImpl implements FlashcardService {
 
     @Transactional
     @Override
-    public void createFlashcard(FlashcardCreateDtoRequest createDtoRequest) {
-        cardFolderRepository.findById(createDtoRequest.getFolderId())
-                .ifPresentOrElse(entity -> {
-                            Flashcard flashcard = flashcardFactory.createFromDtoRequest(createDtoRequest);
-                            flashcard.setCardFolder(entity);
+    public void createFlashcard(FlashcardCreateDtoRequest createDtoRequest) throws CardFolderNotFoundException {
+        CardFolder cardFolder = cardFolderService.getById(createDtoRequest.getFolderId());
 
-                            String imagePath = uploadImage(createDtoRequest.getUserId(), createDtoRequest.getImage());
-                            flashcard.setImagePath(imagePath);
+        Flashcard flashcard = flashcardFactory.createFromDtoRequest(createDtoRequest);
+        flashcard.setCardFolder(cardFolder);
 
-                            try {
-                                flashcardRepository.save(flashcard);
-                            } catch (DataIntegrityViolationException ex) {
-                                log.error("Failed to create flashcard", ex);
-                                throw new FlashcardCreateException("Cannot update flashcard! Name, definition and card folder must not be null.");
-                            }
-                            log.info("Flashcard was saved: {}", flashcard);
-                        }, () -> {
-                            throw new CardFolderNotFoundException("Cannot create flashcard because card folder not found! CardFolder Id: " + createDtoRequest.getFolderId());
-                        });
+        String imagePath = uploadImage(createDtoRequest.getUserId(), createDtoRequest.getImage());
+        flashcard.setImagePath(imagePath);
+
+        try {
+            flashcardRepository.save(flashcard);
+        } catch (ConstraintViolationException ex) {
+            log.error("Failed to create flashcard", ex);
+            imageCloudStorageClient.deleteImage(imagePath);
+            throw new FlashcardCreateException("Cannot update flashcard! Name, definition and card folder must not be null.");
+        }
+        log.info("Flashcard was saved: {}", flashcard);
     }
 
     @Transactional
@@ -103,15 +102,21 @@ public class FlashcardServiceImpl implements FlashcardService {
                     entity.setName(updateDtoRequest.getName());
                     entity.setDefinition(updateDtoRequest.getDefinition());
 
+                    String imagePath = null;
                     if (!(updateDtoRequest.getImage() == null || updateDtoRequest.getImage().isEmpty())) {
-                        String imagePath = uploadImage(updateDtoRequest.getUserId(), updateDtoRequest.getImage());
+                        imagePath = uploadImage(updateDtoRequest.getUserId(), updateDtoRequest.getImage());
                         entity.setImagePath(imagePath);
                     }
 
                     try {
-                        flashcardRepository.save(entity);
-                    } catch (DataIntegrityViolationException ex) {
+                        flashcardRepository.saveAndFlush(entity);
+                    } catch (ConstraintViolationException ex) {
                         log.error("Failed to update flashcard");
+
+                        if (imagePath != null) {
+                            imageCloudStorageClient.deleteImage(imagePath);
+                        }
+
                         throw new FlashcardUpdateException("Cannot update flashcard! Name, definition and card folder must not be null.");
                     }
 
