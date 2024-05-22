@@ -76,7 +76,6 @@ public class FlashcardController {
 
     @PostMapping("/flashcards-add")
     public String saveCreatedFlashcard(@ModelAttribute("flashcard") @Valid FlashcardCreateDtoRequest request,
-                                       @SessionAttribute Long userId,
                                        BindingResult bindingResult,
                                        Model model) {
 
