@@ -1,9 +1,11 @@
 package com.app.flashcards.service.cardfolder;
 
+import com.app.flashcards.client.image.ImageCloudStorageClient;
 import com.app.flashcards.dto.request.CardFolderCreateDtoRequest;
 import com.app.flashcards.dto.request.CardFolderUpdateDtoRequest;
 import com.app.flashcards.dto.response.CardFolderDtoResponse;
 import com.app.flashcards.entity.CardFolder;
+import com.app.flashcards.entity.User;
 import com.app.flashcards.enums.ImagePath;
 import com.app.flashcards.exception.cardfolder.CardFolderCreateException;
 import com.app.flashcards.exception.cardfolder.CardFolderUpdateException;
@@ -12,12 +14,10 @@ import com.app.flashcards.factory.cardfolder.CardFolderFactory;
 import com.app.flashcards.mapper.cardfolder.CardFolderMapper;
 import com.app.flashcards.models.ImageData;
 import com.app.flashcards.repository.CardFolderRepository;
-import com.app.flashcards.repository.UserRepository;
-import com.app.flashcards.client.image.ImageCloudStorageClient;
+import com.app.flashcards.service.user.UserService;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CardFolderServiceImpl implements CardFolderService {
 
     private final CardFolderRepository cardFolderRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CardFolderFactory cardFolderFactory;
     private final CardFolderMapper cardFolderMapper;
     private final ImageCloudStorageClient imageCloudStorageClient;
@@ -70,27 +70,26 @@ public class CardFolderServiceImpl implements CardFolderService {
                 });
     }
 
+
+
     @Transactional
     @Override
-    public void createCardFolder(CardFolderCreateDtoRequest createRequest) {
-        userRepository.findById(createRequest.getUserId())
-                .ifPresentOrElse(user -> {
-                    String imagePath = uploadImage(createRequest.getUserId(), createRequest.getImage());
-                    CardFolder cardFolder = cardFolderFactory.createFromRequest(createRequest);
-                    cardFolder.setUser(user);
-                    cardFolder.setImagePath(imagePath);
+    public void createCardFolder(CardFolderCreateDtoRequest createRequest) throws UserNotFoundException {
+        User user = userService.getUserById(createRequest.getUserId());
+        CardFolder cardFolder = cardFolderFactory.createFromRequest(createRequest);
+        cardFolder.setUser(user);
+        String imagePath = uploadImage(createRequest.getUserId(), createRequest.getImage());
+        cardFolder.setImagePath(imagePath);
 
-                    try {
-                        cardFolderRepository.save(cardFolder);
-                    } catch (ConstraintViolationException ex) {
-                        log.error("Failed to create card folder", ex);
-                        throw new CardFolderCreateException("Cannot create card folder! User and card folder name must not be null.");
-                    }
-                    log.info("Card Folder was saved: {}", cardFolder);
+        try {
+            cardFolderRepository.save(cardFolder);
+        } catch (ConstraintViolationException ex) {
+            log.error("Failed to create card folder", ex);
+            imageCloudStorageClient.deleteImage(imagePath);
+            throw new CardFolderCreateException("Cannot create card folder! User and card folder name must not be null.");
+        }
 
-                }, () -> {
-                    throw new UserNotFoundException("Cannot create cardFolder, because user not found! User id: " + createRequest.getUserId());
-                });
+        log.info("Card Folder was saved: {}", cardFolder);
     }
 
     @Transactional(rollbackFor = CardFolderUpdateException.class)
@@ -101,8 +100,9 @@ public class CardFolderServiceImpl implements CardFolderService {
                     entity.setName(request.getName());
                     entity.setDescription(request.getDescription());
 
+                    String imagePath = null;
                     if (!(request.getImage() == null || request.getImage().isEmpty())) {
-                        String imagePath = uploadImage(request.getUserId(), request.getImage());
+                        imagePath = uploadImage(request.getUserId(), request.getImage());
                         entity.setImagePath(imagePath);
                     }
 
@@ -110,6 +110,11 @@ public class CardFolderServiceImpl implements CardFolderService {
                         cardFolderRepository.saveAndFlush(entity);
                     } catch (ConstraintViolationException ex) {
                         log.error("Failed to update card folder", ex);
+
+                        if (imagePath != null) {
+                            imageCloudStorageClient.deleteImage(imagePath);
+                        }
+
                         throw new CardFolderUpdateException("Cannot update card folder! User and card folder name must not be null.");
                     }
 
@@ -121,5 +126,4 @@ public class CardFolderServiceImpl implements CardFolderService {
         ImageData imageData = new ImageData(userId, image, ImagePath.CARDFOLDER_PATH);
         return imageCloudStorageClient.uploadImage(imageData);
     }
-
 }
