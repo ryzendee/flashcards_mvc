@@ -16,13 +16,13 @@
 
     <header th:replace="~{fragments/navbar-fragment :: navbar}"></header>
 
-    <div class="title col-md-2 mx-auto h2">
+    <div class="title col-md-3 text-center mx-auto h2 mt-5">
         Edit folder
     </div>
 
     <form class="col-md-4 mx-auto" th:action="@{/folders-update}" th:object="${cardFolder}" method="post" enctype="multipart/form-data">
         <div th:if="${#fields.hasErrors('*')}">
-            <div th:each="error : ${errors}" class="alert alert-danger text-center">
+            <div th:each="error : ${errors}" class="alert alert-danger text-center mt-3">
                 <p th:text="${error.defaultMessage}"></p>
             </div>
         </div>
@@ -43,7 +43,7 @@
             <input type="file" class="form-control" id="module-image-file" th:field="*{image}" accept="image/*">
         </div>
 
-        <div class="button-wrapper text-center">
+        <div class="button-wrapper d-flex justify-content-center mt-4">
             <button type="submit" class="button btn btn-success w-25 me-4">
                 OK
             </button>
