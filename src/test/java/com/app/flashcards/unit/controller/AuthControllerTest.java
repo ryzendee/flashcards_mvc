@@ -1,6 +1,9 @@
 package com.app.flashcards.unit.controller;
 
+import com.app.flashcards.config.SecurityConfig;
+import com.app.flashcards.controller.AuthController;
 import com.app.flashcards.dto.request.SignUpDtoRequest;
+import com.app.flashcards.entity.User;
 import com.app.flashcards.service.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,62 +12,80 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.thymeleaf.ThymeleafAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ExtendWith(MockitoExtension.class)
-public class AuthControllerTest {
 
+@WebMvcTest(AuthController.class)
+@AutoConfigureMockMvc
+@Import({ThymeleafAutoConfiguration.class, SecurityConfig.class})
+@ExtendWith(MockitoExtension.class)
+class AuthControllerTest {
     private static final String USERNAME = "test-username";
     private static final String PASSWORD = "test-password";
 
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private UserService authService;
+    @MockBean
+    private UserDetailsService userDetailsService;
+    @MockBean
+    private PasswordEncoder passwordEncoder;
 
     @Test
     void getLoginView_withView_returnLoginView() throws Exception {
         mockMvc.perform(
                 get("/login")
-        ).andExpectAll(
-                status().isOk(),
-                view().name("auth/login-view")
-        );
+        ).andExpect(status().isOk())
+                .andExpect(view().name("auth/login-view"));
     }
 
-    //TODO
-    @WithMockUser(username = USERNAME, password = PASSWORD)
     @Test
-    void login_existsUser_redirectToModules() throws Exception {
+    void login_existsUser_redirectToFolders() throws Exception {
+        User user = new User(USERNAME, PASSWORD);
+        when(userDetailsService.loadUserByUsername(USERNAME))
+                .thenReturn(user);
+        when(passwordEncoder.matches(any(CharSequence.class), eq(PASSWORD)))
+                .thenReturn(true);
+
         mockMvc.perform(
                 post("/login")
                         .param("username", USERNAME)
                         .param("password", PASSWORD)
+                        .with(csrf())
         ).andExpectAll(
                 status().is3xxRedirection(),
-                redirectedUrl("/flashcard-folder")
+                redirectedUrl("/folders")
         );
+
+        verify(userDetailsService, atLeastOnce()).loadUserByUsername(USERNAME);
+        verify(passwordEncoder).matches(any(CharSequence.class), eq(PASSWORD));
     }
 
     @Test
     void login_nonExistsUser_redirectToLoginError() throws Exception {
+        when(userDetailsService.loadUserByUsername(USERNAME))
+                .thenThrow(UsernameNotFoundException.class);
+
         mockMvc.perform(
                 formLogin("/login")
                         .user(USERNAME)
@@ -73,6 +94,8 @@ public class AuthControllerTest {
                 status().is3xxRedirection(),
                 redirectedUrl("/login?error")
         );
+
+        verify(userDetailsService, atLeastOnce()).loadUserByUsername(USERNAME);
     }
     @Test
     void getSignUpView_withView_returnSignUpView() throws Exception {
@@ -137,5 +160,4 @@ public class AuthControllerTest {
                 Arguments.of("test-name", " ", " ")
         );
     }
-
 }
