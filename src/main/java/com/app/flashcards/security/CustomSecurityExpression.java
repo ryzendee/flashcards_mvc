@@ -13,7 +13,7 @@ public class CustomSecurityExpression {
     private final CardFolderService cardFolderService;
 
     public boolean isFolderOwner(Long userId, Long folderId) {
-        log.info("Checking that user is module owner: userId={}, folderId={}", userId, folderId);
-        return cardFolderService.existsByIdAndUserId(userId, folderId);
+        log.info("Checking that user is module owner: folderId={}, userId={}", userId, folderId);
+        return cardFolderService.existsByIdAndUserId(folderId, userId);
     }
 }
