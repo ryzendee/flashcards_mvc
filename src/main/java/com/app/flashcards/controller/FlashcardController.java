@@ -108,7 +108,6 @@ public class FlashcardController {
 
     @PostMapping("/flashcards-update")
     public String saveUpdatedFlashcard(@ModelAttribute("flashcard") @Valid FlashcardUpdateDtoRequest request,
-                                       @SessionAttribute Long userId,
                                        BindingResult bindingResult,
                                        Model model) {
 
