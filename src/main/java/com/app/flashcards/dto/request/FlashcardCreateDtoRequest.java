@@ -15,8 +15,9 @@ public class FlashcardCreateDtoRequest {
 
     private Long userId;
     private Long folderId;
-    @NotBlank(message = "Folder name must not be blank or empty.")
+    @NotBlank(message = "Name must not be blank or empty.")
     private String name;
+    @NotBlank(message = "Definition name must not be blank or empty.")
     private String definition;
     private MultipartFile image;
 }
